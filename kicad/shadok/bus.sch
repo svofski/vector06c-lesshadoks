@@ -1,4 +1,5 @@
 EESchema Schematic File Version 4
+LIBS:shadok-cache
 EELAYER 26 0
 EELAYER END
 $Descr A4 11693 8268
@@ -845,8 +846,6 @@ Connection ~ 5900 4350
 Wire Wire Line
 	5900 4550 5900 4600
 Wire Wire Line
-	5900 4700 5900 4650
-Wire Wire Line
 	5900 4750 5900 4800
 Wire Wire Line
 	7100 4850 7100 4900
@@ -854,8 +853,6 @@ Wire Wire Line
 	7100 4900 5900 4900
 Wire Wire Line
 	5900 4900 5900 4850
-Wire Wire Line
-	5900 4950 5900 5000
 Wire Wire Line
 	5900 5100 5900 5050
 Wire Wire Line
@@ -1307,14 +1304,6 @@ Wire Wire Line
 Wire Wire Line
 	7100 3250 8500 3250
 Wire Wire Line
-	7100 3350 7450 3350
-Wire Wire Line
-	7100 4550 7450 4550
-Wire Wire Line
-	7100 4750 7450 4750
-Wire Wire Line
-	7100 5050 7450 5050
-Wire Wire Line
 	8150 5350 8150 3850
 Wire Wire Line
 	8150 3850 8500 3850
@@ -1327,37 +1316,14 @@ Text Label 7450 4450 2    50   ~ 0
 Text Label 7450 4550 2    50   ~ 0
 ~ЧТВВЪ
 Wire Wire Line
-	7100 4450 7450 4450
-Wire Wire Line
 	7100 4650 7850 4650
 Wire Wire Line
 	7100 4950 7950 4950
-NoConn ~ 8500 3350
-NoConn ~ 8500 3450
-NoConn ~ 8500 3550
-NoConn ~ 8500 3650
-NoConn ~ 8500 3750
-NoConn ~ 10000 3650
-NoConn ~ 10000 3550
-NoConn ~ 10000 3450
-NoConn ~ 10000 3350
-NoConn ~ 10000 3250
-NoConn ~ 7100 4450
-NoConn ~ 7100 4550
 NoConn ~ 7100 4650
-NoConn ~ 7100 4750
 NoConn ~ 7100 4950
-NoConn ~ 7100 5050
 NoConn ~ 7100 5150
-NoConn ~ 5900 5050
-NoConn ~ 5900 4750
-NoConn ~ 5900 4650
-NoConn ~ 5900 4550
-NoConn ~ 5900 4450
 NoConn ~ 5900 4950
 NoConn ~ 5900 5150
-NoConn ~ 7100 3350
-NoConn ~ 5900 3350
 $Comp
 L con-ussr-snp:74LVC1T45 U601
 U 1 1 5AC0892C
@@ -1415,16 +1381,6 @@ Wire Wire Line
 	3800 5750 3800 5850
 Wire Wire Line
 	3750 5850 3800 5850
-Wire Bus Line
-	5250 3650 5250 4350
-Wire Bus Line
-	1600 1150 1600 1850
-Wire Bus Line
-	1600 2900 1600 3600
-Wire Bus Line
-	4300 4350 4300 5550
-Wire Bus Line
-	1500 4850 1500 5650
 Connection ~ 3800 5850
 Wire Wire Line
 	3800 5850 3800 5900
@@ -1439,4 +1395,90 @@ F 3 "" H 9700 4950 50  0001 C CNN
 	1    9700 4950
 	1    0    0    -1  
 $EndComp
+Wire Wire Line
+	7100 3350 8500 3350
+Wire Wire Line
+	10000 3250 10250 3250
+Text HLabel 10250 3250 2    50   Input ~ 0
+~ЗПЗУ
+Wire Wire Line
+	5900 3350 5900 3400
+Wire Wire Line
+	5900 3400 7100 3400
+Wire Wire Line
+	7100 3400 7100 3350
+Connection ~ 7100 3350
+NoConn ~ 5900 4650
+Wire Wire Line
+	5900 4600 7100 4600
+Wire Wire Line
+	7100 4600 7100 4550
+Connection ~ 7100 4550
+Wire Wire Line
+	5900 4450 5900 4500
+Wire Wire Line
+	5900 4500 7100 4500
+Wire Wire Line
+	7100 4500 7100 4450
+Connection ~ 7100 4450
+Wire Wire Line
+	5900 4800 7100 4800
+Wire Wire Line
+	7100 4800 7100 4750
+Connection ~ 7100 4750
+Wire Wire Line
+	7100 4750 8000 4750
+Wire Wire Line
+	7600 4450 7600 3450
+Wire Wire Line
+	7600 3450 8500 3450
+Wire Wire Line
+	7100 4450 7600 4450
+Wire Wire Line
+	7650 4550 7650 3550
+Wire Wire Line
+	7650 3550 8500 3550
+Wire Wire Line
+	7100 4550 7650 4550
+Wire Wire Line
+	8000 4750 8000 3650
+Wire Wire Line
+	8000 3650 8500 3650
+Wire Wire Line
+	8100 5050 8100 3750
+Wire Wire Line
+	8100 3750 8500 3750
+Wire Wire Line
+	7100 5050 8100 5050
+Wire Wire Line
+	5900 5100 7100 5100
+Wire Wire Line
+	7100 5100 7100 5050
+Connection ~ 7100 5050
+Wire Wire Line
+	10000 3350 10250 3350
+Wire Wire Line
+	10000 3450 10250 3450
+Wire Wire Line
+	10000 3550 10250 3550
+Wire Wire Line
+	10000 3650 10250 3650
+Wire Bus Line
+	5250 3650 5250 4350
+Wire Bus Line
+	1600 1150 1600 1850
+Wire Bus Line
+	1600 2900 1600 3600
+Wire Bus Line
+	4300 4350 4300 5550
+Wire Bus Line
+	1500 4850 1500 5650
+Text HLabel 10250 3350 2    50   Input ~ 0
+~ЧТЗУ
+Text HLabel 10250 3450 2    50   Input ~ 0
+~ЧТВВ
+Text HLabel 10250 3550 2    50   Input ~ 0
+~ЗПВВ
+Text HLabel 10250 3650 2    50   Input ~ 0
+СТЕК
 $EndSCHEMATC

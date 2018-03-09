@@ -1,4 +1,5 @@
 EESchema Schematic File Version 4
+LIBS:shadok-cache
 EELAYER 26 0
 EELAYER END
 $Descr A4 11693 8268
@@ -3077,6 +3078,11 @@ F5 "СТРОБ_СОСТ" I L 8500 2350 50
 F6 "~БЛК" I L 8500 2900 50 
 F7 "~RAS" I L 8500 2450 50 
 F8 "~CAS" I L 8500 2550 50 
+F9 "~ЗПЗУ" I L 8500 1950 50 
+F10 "~ЧТЗУ" I L 8500 2050 50 
+F11 "~ЧТВВ" I L 8500 2150 50 
+F12 "~ЗПВВ" I L 8500 2250 50 
+F13 "СТЕК" I L 8500 2650 50 
 $EndSheet
 Text Label 10200 3150 0    47   ~ 0
 ~SD_SS
@@ -3539,4 +3545,14 @@ Wire Bus Line
 	3100 600  8000 600 
 Wire Bus Line
 	550  6850 6350 6850
+Text Label 8500 1950 2    47   ~ 0
+VIDEOBW
+Text Label 8500 2050 2    47   ~ 0
+HVSYNC
+Text Label 8500 2150 2    47   ~ 0
+ADC_SYNCp
+Text Label 8500 2250 2    47   ~ 0
+ADC_SYNCINT
+Text Label 8500 2650 2    47   ~ 0
+ADC_SYNCn
 $EndSCHEMATC
