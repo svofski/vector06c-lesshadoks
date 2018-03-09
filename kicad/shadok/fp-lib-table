@@ -1,0 +1,13 @@
+(fp_lib_table
+  (lib (name altera-eqfp-144)(type KiCad)(uri ${KIPRJMOD}/modules/altera-eqfp-144.pretty)(options "")(descr ""))
+  (lib (name ESP8266)(type KiCad)(uri ${KIPRJMOD}/modules/ESP8266.pretty)(options "")(descr ""))
+  (lib (name issi-tsop2-54)(type KiCad)(uri ${KIPRJMOD}/modules/issi-tsop2-54.pretty)(options "")(descr ""))
+  (lib (name con-ussr-snp)(type KiCad)(uri ${KIPRJMOD}/modules/con-ussr-snp.pretty)(options "")(descr ""))
+  (lib (name jack-3)(type KiCad)(uri ${KIPRJMOD}/modules/jack-3.pretty)(options "")(descr ""))
+  (lib (name microsd)(type KiCad)(uri ${KIPRJMOD}/modules/microsd.pretty)(options "")(descr ""))
+  (lib (name svoface)(type KiCad)(uri ${KIPRJMOD}/modules/svoface.pretty)(options "")(descr ""))
+  (lib (name shadki)(type KiCad)(uri ${KIPRJMOD}/modules/shadki.pretty)(options "")(descr ""))
+  (lib (name wirepads)(type KiCad)(uri ${KIPRJMOD}/modules/wirepads.pretty)(options "")(descr ""))
+  (lib (name kxo97)(type KiCad)(uri ${KIPRJMOD}/modules/kxo97.pretty)(options "")(descr ""))
+  (lib (name xtals)(type KiCad)(uri ${KIPRJMOD}/modules/xtals.pretty)(options "")(descr ""))
+)
