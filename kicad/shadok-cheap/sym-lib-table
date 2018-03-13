@@ -1,0 +1,11 @@
+(sym_lib_table
+  (lib (name ep4ce06e22)(type Legacy)(uri ${KIPRJMOD}/lib/ep4ce06e22.lib)(options "")(descr ""))
+  (lib (name con-ussr-snp)(type Legacy)(uri ${KIPRJMOD}/lib/con-ussr-snp.lib)(options "")(descr ""))
+  (lib (name 74lvc1t45)(type Legacy)(uri ${KIPRJMOD}/lib/74lvc1t45.lib)(options "")(descr ""))
+  (lib (name 74LVC8T245)(type Legacy)(uri ${KIPRJMOD}/lib/74LVC8T245.lib)(options "")(descr ""))
+  (lib (name esp12f)(type Legacy)(uri ${KIPRJMOD}/lib/esp12f.lib)(options "")(descr ""))
+  (lib (name IS42S16400J)(type Legacy)(uri ${KIPRJMOD}/lib/IS42S16400J.lib)(options "")(descr ""))
+  (lib (name mcp42010)(type Legacy)(uri ${KIPRJMOD}/lib/mcp42010.lib)(options "")(descr ""))
+  (lib (name tpa6110a2)(type Legacy)(uri ${KIPRJMOD}/lib/tpa6110a2.lib)(options "")(descr ""))
+  (lib (name shadok-rescue)(type Legacy)(uri ${KIPRJMOD}/shadok-rescue.lib)(options "")(descr ""))
+)

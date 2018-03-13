@@ -1,0 +1,406 @@
+EESchema Schematic File Version 4
+LIBS:shadok-cache
+EELAYER 26 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 5 8
+Title "ESP12F and SD Card"
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L esp12f:ESP12F U501
+U 1 1 5B4DE57B
+P 5750 2300
+F 0 "U501" H 5800 3459 47  0000 C CNN
+F 1 "ESP12F" H 5800 3372 47  0000 C CNN
+F 2 "ESP8266:ESP-12E_SMD" H 5750 2300 47  0001 C CNN
+F 3 "" H 5750 2300 47  0001 C CNN
+	1    5750 2300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4050 2750 3450 2750
+Wire Wire Line
+	3450 2750 3450 2250
+Wire Wire Line
+	4050 2050 3900 2050
+$Comp
+L power:+3V3 #PWR0503
+U 1 1 5B4DE708
+P 3450 2750
+F 0 "#PWR0503" H 3450 2600 50  0001 C CNN
+F 1 "+3V3" V 3465 2878 50  0000 L CNN
+F 2 "" H 3450 2750 50  0001 C CNN
+F 3 "" H 3450 2750 50  0001 C CNN
+	1    3450 2750
+	0    -1   -1   0   
+$EndComp
+$Comp
+L device:R R501
+U 1 1 5B4DE78E
+P 3700 2250
+F 0 "R501" V 3600 2250 50  0000 C CNN
+F 1 "10K" V 3700 2250 50  0000 C CNN
+F 2 "Resistors_SMD:R_0603" V 3630 2250 50  0001 C CNN
+F 3 "" H 3700 2250 50  0001 C CNN
+	1    3700 2250
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	4050 2250 3900 2250
+Wire Wire Line
+	3550 2250 3450 2250
+NoConn ~ 4050 2150
+Text HLabel 1450 2450 0    47   Input ~ 0
+DCLK/CLK
+Text HLabel 1450 2550 0    47   Input ~ 0
+SO
+Text HLabel 1450 2650 0    47   Input ~ 0
+DATA0/SI
+$Comp
+L device:CP1_Small C501
+U 1 1 5B4DED57
+P 3450 3000
+F 0 "C501" H 3541 3046 50  0000 L CNN
+F 1 "220.0" H 3541 2955 50  0000 L CNN
+F 2 "Capacitors_Tantalum_SMD:CP_Tantalum_Case-D_EIA-7343-31_Reflow" H 3450 3000 50  0001 C CNN
+F 3 "" H 3450 3000 50  0001 C CNN
+	1    3450 3000
+	1    0    0    -1  
+$EndComp
+$Comp
+L device:C_Small C502
+U 1 1 5B4DEE66
+P 4000 3000
+F 0 "C502" H 4092 3046 50  0000 L CNN
+F 1 "0.1" H 4092 2955 50  0000 L CNN
+F 2 "Capacitors_SMD:C_0603" H 4000 3000 50  0001 C CNN
+F 3 "" H 4000 3000 50  0001 C CNN
+	1    4000 3000
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0504
+U 1 1 5B4DF955
+P 3450 3100
+F 0 "#PWR0504" H 3450 2850 50  0001 C CNN
+F 1 "GND" H 3455 2927 50  0001 C CNN
+F 2 "" H 3450 3100 50  0001 C CNN
+F 3 "" H 3450 3100 50  0001 C CNN
+	1    3450 3100
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0505
+U 1 1 5B4DF96F
+P 4000 3100
+F 0 "#PWR0505" H 4000 2850 50  0001 C CNN
+F 1 "GND" H 4150 3000 50  0001 C CNN
+F 2 "" H 4000 3100 50  0001 C CNN
+F 3 "" H 4000 3100 50  0001 C CNN
+	1    4000 3100
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3450 2750 3450 2900
+Wire Wire Line
+	3450 2900 4000 2900
+Connection ~ 3450 2750
+Connection ~ 3450 2900
+Wire Wire Line
+	4050 2350 1450 2350
+Text HLabel 1450 2350 0    47   Input ~ 0
+~CONFIG
+Wire Wire Line
+	7550 2250 8050 2250
+Text HLabel 8050 2250 2    47   Input ~ 0
+CONF_DONE
+Wire Wire Line
+	7550 2050 8050 2050
+Wire Wire Line
+	7550 2150 8050 2150
+Text HLabel 8050 2050 2    47   Input ~ 0
+TxD
+Text HLabel 8050 2150 2    47   Input ~ 0
+RxD
+Text HLabel 8650 2850 3    47   Input ~ 0
+~ESP_SS
+Wire Wire Line
+	7550 2650 8650 2650
+Wire Wire Line
+	7550 2450 9450 2450
+$Comp
+L power:GND #PWR0506
+U 1 1 5B545F18
+P 7550 2750
+F 0 "#PWR0506" H 7550 2500 50  0001 C CNN
+F 1 "GND" H 7700 2650 50  0001 C CNN
+F 2 "" H 7550 2750 50  0001 C CNN
+F 3 "" H 7550 2750 50  0001 C CNN
+	1    7550 2750
+	1    0    0    -1  
+$EndComp
+$Comp
+L device:Jumper JP501
+U 1 1 5B545FB5
+P 9450 3150
+F 0 "JP501" V 9404 3276 50  0000 L CNN
+F 1 "SERIAL BUTTLOAD" V 9495 3276 50  0000 L CNN
+F 2 "Pin_Headers:Pin_Header_Straight_1x02" H 9450 3150 50  0001 C CNN
+F 3 "" H 9450 3150 50  0001 C CNN
+	1    9450 3150
+	0    1    1    0   
+$EndComp
+Connection ~ 9450 2450
+$Comp
+L power:GND #PWR0510
+U 1 1 5B5460A8
+P 9450 3450
+F 0 "#PWR0510" H 9450 3200 50  0001 C CNN
+F 1 "GND" H 9600 3350 50  0001 C CNN
+F 2 "" H 9450 3450 50  0001 C CNN
+F 3 "" H 9450 3450 50  0001 C CNN
+	1    9450 3450
+	1    0    0    -1  
+$EndComp
+Connection ~ 1950 2450
+Wire Wire Line
+	1950 2450 1450 2450
+Connection ~ 1850 2650
+Wire Wire Line
+	1850 2650 1450 2650
+Connection ~ 2050 2550
+Wire Wire Line
+	2050 2550 1450 2550
+Text Notes 2300 3950 0    47   ~ 0
+1. ESP12F is bus master after power on\n2. ESP12F configures EP4CE06 using Passive Serial\n3. EP4CE06 enters user mode\n4. ESP12F becomes SPI slave with SS on IO9\n5. SD Card is on the same bus, EP4CE06 is the master
+Text HLabel 1450 6050 0    47   Input ~ 0
+~SD_CS
+NoConn ~ 5500 3600
+NoConn ~ 5600 3600
+NoConn ~ 5700 3600
+NoConn ~ 5800 3600
+NoConn ~ 5900 3600
+NoConn ~ 6000 3600
+$Comp
+L conn:Micro_SD_Card J501
+U 1 1 5A82BA9B
+P 4000 6250
+F 0 "J501" H 3950 6967 50  0000 C CNN
+F 1 "Micro_SD_Card" H 3950 6876 50  0000 C CNN
+F 2 "microsd:Conn_uSDcard" H 5150 6550 50  0001 C CNN
+F 3 "http://katalog.we-online.de/em/datasheet/693072010801.pdf" H 4000 6250 50  0001 C CNN
+	1    4000 6250
+	1    0    0    -1  
+$EndComp
+NoConn ~ 3100 5950
+Wire Wire Line
+	3100 6150 1850 6150
+$Comp
+L power:+3V3 #PWR010
+U 1 1 5A82E985
+P 2750 6250
+F 0 "#PWR010" H 2750 6100 50  0001 C CNN
+F 1 "+3V3" V 2765 6378 50  0000 L CNN
+F 2 "" H 2750 6250 50  0001 C CNN
+F 3 "" H 2750 6250 50  0001 C CNN
+	1    2750 6250
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	3100 6350 1950 6350
+$Comp
+L power:GND #PWR011
+U 1 1 5A830CEE
+P 2750 6450
+F 0 "#PWR011" H 2750 6200 50  0001 C CNN
+F 1 "GND" H 2755 6277 50  0001 C CNN
+F 2 "" H 2750 6450 50  0001 C CNN
+F 3 "" H 2750 6450 50  0001 C CNN
+	1    2750 6450
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	3100 6550 2050 6550
+NoConn ~ 3100 6650
+$Comp
+L power:GND #PWR012
+U 1 1 5A832893
+P 4900 6900
+F 0 "#PWR012" H 4900 6650 50  0001 C CNN
+F 1 "GND" H 4905 6727 50  0001 C CNN
+F 2 "" H 4900 6900 50  0001 C CNN
+F 3 "" H 4900 6900 50  0001 C CNN
+	1    4900 6900
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4800 6850 4900 6850
+Wire Wire Line
+	4900 6850 4900 6900
+Wire Wire Line
+	1950 2450 1950 6350
+Wire Wire Line
+	2050 2550 2050 6550
+Wire Wire Line
+	1850 2650 1850 6150
+$Comp
+L device:C_Small C503
+U 1 1 5A83547E
+P 2800 6350
+F 0 "C503" H 2892 6396 50  0000 L CNN
+F 1 "4.7" H 2892 6305 50  0000 L CNN
+F 2 "Capacitors_SMD:C_0805" H 2800 6350 50  0001 C CNN
+F 3 "" H 2800 6350 50  0001 C CNN
+	1    2800 6350
+	1    0    0    -1  
+$EndComp
+Connection ~ 2800 6250
+Wire Wire Line
+	2800 6250 2750 6250
+Connection ~ 2800 6450
+Wire Wire Line
+	2800 6450 2750 6450
+Wire Wire Line
+	1450 6050 2650 6050
+Wire Wire Line
+	2800 6250 3100 6250
+Wire Wire Line
+	2800 6450 3100 6450
+$Comp
+L device:R R505
+U 1 1 5A8835D6
+P 2650 5800
+F 0 "R505" H 2720 5846 50  0000 L CNN
+F 1 "10K" H 2720 5755 50  0000 L CNN
+F 2 "Resistors_SMD:R_0805" V 2580 5800 50  0001 C CNN
+F 3 "" H 2650 5800 50  0001 C CNN
+	1    2650 5800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2650 5950 2650 6050
+Connection ~ 2650 6050
+Wire Wire Line
+	2650 6050 3100 6050
+$Comp
+L power:+3V3 #PWR015
+U 1 1 5A8840F7
+P 2650 5550
+F 0 "#PWR015" H 2650 5400 50  0001 C CNN
+F 1 "+3V3" H 2665 5723 50  0000 C CNN
+F 2 "" H 2650 5550 50  0001 C CNN
+F 3 "" H 2650 5550 50  0001 C CNN
+	1    2650 5550
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2650 5550 2650 5650
+Text Notes 1900 1700 0    50   ~ 0
+IO16 has builtin pulldown\nothers have pullus
+NoConn ~ 7550 2350
+Wire Wire Line
+	3900 2250 3900 2050
+Connection ~ 3900 2250
+Wire Wire Line
+	3900 2250 3850 2250
+Wire Wire Line
+	2700 2450 4050 2450
+Wire Wire Line
+	2700 2550 4050 2550
+Wire Wire Line
+	2700 2650 4050 2650
+$Comp
+L conn:TEST_1P J502
+U 1 1 5ABC6AD2
+P 3900 1900
+F 0 "J502" V 3854 2088 50  0000 L CNN
+F 1 "TEST_1P" V 3700 1900 50  0001 L CNN
+F 2 "wirepads:WIREPAD_SMD_TINY" H 4100 1900 50  0001 C CNN
+F 3 "" H 4100 1900 50  0001 C CNN
+	1    3900 1900
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3900 1900 3900 2050
+Connection ~ 3900 2050
+$Comp
+L device:R_Pack04 RN501
+U 1 1 5ABF449C
+P 2500 2650
+F 0 "RN501" V 2750 2800 50  0000 C CNN
+F 1 "200" V 2750 2550 50  0000 C CNN
+F 2 "Resistors_SMD:R_Array_Concave_4x0603" V 2775 2650 50  0001 C CNN
+F 3 "" H 2500 2650 50  0001 C CNN
+	1    2500 2650
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	1950 2450 2300 2450
+Wire Wire Line
+	2050 2550 2300 2550
+Wire Wire Line
+	1850 2650 2300 2650
+$Comp
+L device:R_Pack04 RN502
+U 1 1 5ABFDCB1
+P 9900 2650
+F 0 "RN502" V 10150 2800 50  0000 C CNN
+F 1 "10K" V 10150 2550 50  0000 C CNN
+F 2 "Resistors_SMD:R_Array_Concave_4x0603" V 10175 2650 50  0001 C CNN
+F 3 "" H 9900 2650 50  0001 C CNN
+	1    9900 2650
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	10100 2550 10100 2450
+Connection ~ 10100 2450
+Wire Wire Line
+	10100 2450 10100 2400
+$Comp
+L power:+3V3 #PWR03
+U 1 1 5ABFEB1C
+P 10100 2400
+F 0 "#PWR03" H 10100 2250 50  0001 C CNN
+F 1 "+3V3" H 10115 2573 50  0000 C CNN
+F 2 "" H 10100 2400 50  0001 C CNN
+F 3 "" H 10100 2400 50  0001 C CNN
+	1    10100 2400
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9450 2450 9700 2450
+Wire Wire Line
+	9450 2850 9450 2450
+Wire Wire Line
+	7550 2550 9700 2550
+Wire Wire Line
+	8650 2850 8650 2650
+Connection ~ 8650 2650
+Wire Wire Line
+	9500 2650 9500 2750
+Wire Wire Line
+	9500 2750 9700 2750
+$Comp
+L power:GND #PWR018
+U 1 1 5AC03975
+P 10300 2750
+F 0 "#PWR018" H 10300 2500 50  0001 C CNN
+F 1 "GND" H 10450 2650 50  0001 C CNN
+F 2 "" H 10300 2750 50  0001 C CNN
+F 3 "" H 10300 2750 50  0001 C CNN
+	1    10300 2750
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	10100 2750 10300 2750
+Wire Wire Line
+	8650 2650 9500 2650
+$EndSCHEMATC
