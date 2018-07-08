@@ -27,7 +27,7 @@ def printrascas(address):
     return m2hex(m1(b2)), m2hex(m2(b2))
     
 print 'Expect to see these RAS/CAS values on SCHAPP for A=0x1234:'
-ras,cas = printrascas(0x1234)
+ras,cas = printrascas(0xa000)
 print ras,cas
 
 # doing the inverse
@@ -42,15 +42,22 @@ def rascas2adrs(ras,cas):
     b = ['#']*24
     b[9] = m1[0]
     for i,busn in enumerate(MAP_RAS):
-        b[busn] = m1[i]
         if busn > 16:
             b[busn-8] = int(not(m1[i]))
-    for i,busn in enumerate(MAP_CAS):
-        b[busn] = m2[i]
-        if busn > 16:
-            b[busn-8] = int(not(m1[i]))
+            print "b[%d]=~ra[%d]" % (busn-8-1,i)
+        else:
+            b[busn] = m1[i]
+            print "b[%d]=ra[%d]" % (busn-1,i)
 
-    return m2hex(b[9:16]),m2hex(b[1:9])
+    for i,busn in enumerate(MAP_CAS):
+        if busn > 16:
+            b[busn-8] = int(not(m2[i]))
+            print "b[%d]=~ca[%d]" % (busn-8-1,i)
+        else:
+            print "b[%d]=ca[%d]" % (busn-1,i)
+            b[busn] = m2[i]
+
+    return m2hex(b[9:17]),m2hex(b[1:9])
 
 ras=eval(ras)
 cas=eval(cas)
