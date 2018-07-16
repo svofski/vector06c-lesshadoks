@@ -1097,9 +1097,9 @@ F8 "~ESP_SS" I R 10200 3050 50
 F9 "~SD_CS" I R 10200 3150 50 
 F10 "SO" I R 10200 2750 50 
 $EndSheet
-Text Label 10850 3450 0    47   ~ 0
+Text Label 11050 3150 0    47   ~ 0
 ESP_TxD
-Text Label 10850 3350 0    47   ~ 0
+Text Label 10850 2900 0    47   ~ 0
 ESP_RxD
 Text Label 6700 4250 0    47   ~ 0
 ~ESP_SS
@@ -3040,6 +3040,7 @@ F10 "~ЧТЗУ" I L 8500 2050 50
 F11 "~ЧТВВ" I L 8500 2150 50 
 F12 "~ЗПВВ" I L 8500 2250 50 
 F13 "СТЕК" I L 8500 2650 50 
+F14 "~DDIR" I L 8500 2800 50 
 $EndSheet
 Text Label 10200 3150 0    47   ~ 0
 ~SD_SS
@@ -3382,11 +3383,11 @@ F 3 "" H 7250 3050 50  0001 C CNN
 $EndComp
 NoConn ~ 1400 2450
 Text Label 1400 2750 2    47   ~ 0
-FREE_IO1
+~DDIR
 Text Label 1400 2850 2    47   ~ 0
 FREE_IO2
 Text Label 7300 950  2    47   ~ 0
-FREE_IO1
+~DDIR
 $Comp
 L conn:TEST_1P J101
 U 1 1 5AA487AD
@@ -3400,6 +3401,34 @@ F 3 "" H 7650 950 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	7450 950  7300 950 
+$Comp
+L device:R R101
+U 1 1 5B429F86
+P 10850 3050
+F 0 "R101" V 10950 3000 50  0000 C CNN
+F 1 "100" V 10850 3050 50  0000 C CNN
+F 2 "Resistors_SMD:R_0805" V 10780 3050 50  0001 C CNN
+F 3 "" H 10850 3050 50  0001 C CNN
+	1    10850 3050
+	1    0    0    -1  
+$EndComp
+$Comp
+L device:R R103
+U 1 1 5B42A0E1
+P 11050 3300
+F 0 "R103" V 11150 3250 50  0000 C CNN
+F 1 "100" V 11050 3300 50  0000 C CNN
+F 2 "Resistors_SMD:R_0805" V 10980 3300 50  0001 C CNN
+F 3 "" H 11050 3300 50  0001 C CNN
+	1    11050 3300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	10850 3200 10850 3350
+Wire Wire Line
+	10850 3450 11050 3450
+Text Label 8500 2800 2    47   ~ 0
+~DDIR
 Wire Bus Line
 	1100 550  1100 1950
 Wire Bus Line

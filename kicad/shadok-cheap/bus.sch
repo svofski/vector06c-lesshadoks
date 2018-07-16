@@ -1110,8 +1110,6 @@ Wire Wire Line
 	9200 850  9500 850 
 Connection ~ 9500 850 
 Wire Wire Line
-	9500 850  9800 850 
-Wire Wire Line
 	8600 1050 8900 1050
 Connection ~ 8900 1050
 Wire Wire Line
@@ -1120,8 +1118,6 @@ Connection ~ 9200 1050
 Wire Wire Line
 	9200 1050 9500 1050
 Connection ~ 9500 1050
-Wire Wire Line
-	9500 1050 9800 1050
 $Comp
 L power:GND #PWR0626
 U 1 1 5B22FAEB
@@ -1177,10 +1173,6 @@ F 3 "" H 10100 950 50  0001 C CNN
 	1    10100 950 
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	9800 850  10100 850 
-Wire Wire Line
-	9800 1050 10100 1050
 $Comp
 L device:C_Small C602
 U 1 1 5B2EE0BA
@@ -1234,12 +1226,6 @@ Connection ~ 9200 1450
 Wire Wire Line
 	9200 1450 9500 1450
 Connection ~ 9500 1450
-Wire Wire Line
-	9500 1450 9800 1450
-Wire Wire Line
-	9800 1450 10100 1450
-Wire Wire Line
-	10100 1650 9800 1650
 Connection ~ 8900 1650
 Wire Wire Line
 	8900 1650 8600 1650
@@ -1249,13 +1235,9 @@ Wire Wire Line
 Connection ~ 9500 1650
 Wire Wire Line
 	9500 1650 9200 1650
-Wire Wire Line
-	9800 1650 9500 1650
 Text Notes 7250 6900 0    157  ~ 0
 Шинные приемопередатчики
 Text Label 9850 4850 0    47   ~ 0
-~БЛК
-Text Label 3900 4700 0    47   ~ 0
 ~БЛК
 Connection ~ 5900 5150
 Wire Wire Line
@@ -1424,6 +1406,22 @@ Wire Wire Line
 	10000 3550 10250 3550
 Wire Wire Line
 	10000 3650 10250 3650
+Text HLabel 10250 3350 2    50   Input ~ 0
+~ЧТЗУ
+Text HLabel 10250 3450 2    50   Input ~ 0
+~ЧТВВ
+Text HLabel 10250 3550 2    50   Input ~ 0
+~ЗПВВ
+Text HLabel 10250 3650 2    50   Input ~ 0
+СТЕК
+Wire Wire Line
+	9500 850  10100 850 
+Wire Wire Line
+	9500 1050 10100 1050
+Wire Wire Line
+	9500 1450 10100 1450
+Wire Wire Line
+	9500 1650 10100 1650
 Wire Bus Line
 	5250 3650 5250 4350
 Wire Bus Line
@@ -1434,12 +1432,6 @@ Wire Bus Line
 	4300 4350 4300 5550
 Wire Bus Line
 	1500 4850 1500 5650
-Text HLabel 10250 3350 2    50   Input ~ 0
-~ЧТЗУ
-Text HLabel 10250 3450 2    50   Input ~ 0
-~ЧТВВ
-Text HLabel 10250 3550 2    50   Input ~ 0
-~ЗПВВ
-Text HLabel 10250 3650 2    50   Input ~ 0
-СТЕК
+Text HLabel 3900 4700 2    50   Input ~ 0
+~DDIR
 $EndSCHEMATC

@@ -1,0 +1,225 @@
+# -------------------------------------------------------------------------- #
+#
+# Copyright (C) 2017  Intel Corporation. All rights reserved.
+# Your use of Intel Corporation's design tools, logic functions
+# and other software and tools, and its AMPP partner logic
+# functions, and any output files from any of the foregoing
+# (including device programming or simulation files), and any
+# associated documentation or information are expressly subject
+# to the terms and conditions of the Intel Program License
+# Subscription Agreement, the Intel Quartus Prime License Agreement,
+# the Intel FPGA IP License Agreement, or other applicable license
+# agreement, including, without limitation, that your use is for
+# the sole purpose of programming logic devices manufactured by
+# Intel and sold by Intel or its authorized distributors.  Please
+# refer to the applicable agreement for further details.
+#
+# -------------------------------------------------------------------------- #
+#
+# Quartus Prime
+# Version 17.1.0 Build 590 10/25/2017 SJ Lite Edition
+# Date created = 00:32:32  February 01, 2018
+#
+# -------------------------------------------------------------------------- #
+#
+# Notes:
+#
+# 1) The default values for assignments are stored in the file:
+#		pompaient_assignment_defaults.qdf
+#    If this file doesn't exist, see file:
+#		assignment_defaults.qdf
+#
+# 2) Altera recommends that you do not modify this file. This
+#    file is updated automatically by the Quartus Prime software
+#    and any changes you make may be lost or overwritten.
+#
+# -------------------------------------------------------------------------- #
+
+
+set_global_assignment -name FAMILY "Cyclone IV E"
+set_global_assignment -name DEVICE EP4CE6E22C8
+set_global_assignment -name TOP_LEVEL_ENTITY lesshadoks_top
+set_global_assignment -name ORIGINAL_QUARTUS_VERSION 17.1.0
+set_global_assignment -name PROJECT_CREATION_TIME_DATE "00:52:52  JUNE 28, 2018"
+set_global_assignment -name LAST_QUARTUS_VERSION "17.1.0 Lite Edition"
+set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
+set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
+set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
+set_global_assignment -name DEVICE_FILTER_PACKAGE TQFP
+set_global_assignment -name ERROR_CHECK_FREQUENCY_DIVISOR 1
+set_global_assignment -name EDA_SIMULATION_TOOL "ModelSim-Altera (Verilog)"
+set_global_assignment -name EDA_TIME_SCALE "1 ps" -section_id eda_simulation
+set_global_assignment -name EDA_OUTPUT_DATA_FORMAT "VERILOG HDL" -section_id eda_simulation
+set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
+set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
+
+set_location_assignment PIN_28 -to DRAM_DQ[0]
+set_location_assignment PIN_30 -to DRAM_DQ[1]
+set_location_assignment PIN_31 -to DRAM_DQ[2]
+set_location_assignment PIN_32 -to DRAM_DQ[3]
+set_location_assignment PIN_33 -to DRAM_DQ[4]
+set_location_assignment PIN_34 -to DRAM_DQ[5]
+set_location_assignment PIN_38 -to DRAM_DQ[6]
+set_location_assignment PIN_39 -to DRAM_DQ[7]
+set_location_assignment PIN_58 -to DRAM_DQ[8]
+set_location_assignment PIN_55 -to DRAM_DQ[9]
+set_location_assignment PIN_54 -to DRAM_DQ[10]
+set_location_assignment PIN_53 -to DRAM_DQ[11]
+set_location_assignment PIN_52 -to DRAM_DQ[12]
+set_location_assignment PIN_51 -to DRAM_DQ[13]
+set_location_assignment PIN_50 -to DRAM_DQ[14]
+set_location_assignment PIN_49 -to DRAM_DQ[15]
+set_location_assignment PIN_76 -to DRAM_ADDR[0]
+set_location_assignment PIN_77 -to DRAM_ADDR[1]
+set_location_assignment PIN_80 -to DRAM_ADDR[2]
+set_location_assignment PIN_83 -to DRAM_ADDR[3]
+set_location_assignment PIN_71 -to DRAM_ADDR[4]
+set_location_assignment PIN_70 -to DRAM_ADDR[5]
+set_location_assignment PIN_69 -to DRAM_ADDR[6]
+set_location_assignment PIN_68 -to DRAM_ADDR[7]
+set_location_assignment PIN_67 -to DRAM_ADDR[8]
+set_location_assignment PIN_66 -to DRAM_ADDR[9]
+set_location_assignment PIN_75 -to DRAM_ADDR[10]
+set_location_assignment PIN_65 -to DRAM_ADDR[11]
+set_location_assignment PIN_43 -to DRAM_WE_N
+set_location_assignment PIN_44 -to DRAM_CAS_N
+set_location_assignment PIN_46 -to DRAM_RAS_N
+set_location_assignment PIN_60 -to DRAM_CLK
+set_location_assignment PIN_64 -to DRAM_CKE
+set_location_assignment PIN_72 -to DRAM_CS_N
+set_location_assignment PIN_73 -to DRAM_BA_0
+set_location_assignment PIN_74 -to DRAM_BA_1
+set_location_assignment PIN_42 -to DRAM_LDQM
+set_location_assignment PIN_59 -to DRAM_UDQM
+
+set_global_assignment -name ENABLE_OCT_DONE OFF
+set_global_assignment -name ENABLE_CONFIGURATION_PINS OFF
+set_global_assignment -name ENABLE_BOOT_SEL_PIN OFF
+set_global_assignment -name STRATIXV_CONFIGURATION_SCHEME "PASSIVE SERIAL"
+set_global_assignment -name USE_CONFIGURATION_DEVICE OFF
+set_global_assignment -name CRC_ERROR_OPEN_DRAIN OFF
+set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "3.3-V LVTTL"
+set_global_assignment -name OUTPUT_IO_TIMING_NEAR_END_VMEAS "HALF VCCIO" -rise
+set_global_assignment -name OUTPUT_IO_TIMING_NEAR_END_VMEAS "HALF VCCIO" -fall
+set_global_assignment -name OUTPUT_IO_TIMING_FAR_END_VMEAS "HALF SIGNAL SWING" -rise
+set_global_assignment -name OUTPUT_IO_TIMING_FAR_END_VMEAS "HALF SIGNAL SWING" -fall
+set_global_assignment -name CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION "USE AS REGULAR IO"
+set_global_assignment -name RESERVE_DATA0_AFTER_CONFIGURATION "USE AS REGULAR IO"
+set_global_assignment -name RESERVE_DATA1_AFTER_CONFIGURATION "USE AS REGULAR IO"
+set_global_assignment -name RESERVE_FLASH_NCE_AFTER_CONFIGURATION "USE AS REGULAR IO"
+set_global_assignment -name RESERVE_DCLK_AFTER_CONFIGURATION "USE AS REGULAR IO"
+
+set_location_assignment PIN_24 -to CLK50
+#set_instance_assignment -name IO_STANDARD LVDS -to ADC_SND
+#set_location_assignment PIN_98 -to "ADC_SND(n)"
+#set_location_assignment PIN_99 -to ADC_SND
+#set_location_assignment PIN_87 -to ADC_SNDINT
+set_location_assignment PIN_110 -to SPI_CLK
+set_location_assignment PIN_13 -to SPI_MOSI
+set_location_assignment PIN_6 -to SPI_MISO
+set_location_assignment PIN_25 -to BUTT1
+set_location_assignment PIN_84 -to ESP_SS_N
+set_location_assignment PIN_88 -to ESP_RXD
+set_location_assignment PIN_113 -to ESP_TXD
+set_location_assignment PIN_112 -to SD_SS_N
+set_location_assignment PIN_111 -to JOY_SS_N
+set_location_assignment PIN_3 -to VU_SHAVV_N[0]
+set_location_assignment PIN_2 -to VU_SHAVV_N[1]
+set_location_assignment PIN_1 -to VU_SHAVV_N[2]
+set_location_assignment PIN_144 -to VU_SHAVV_N[3]
+set_location_assignment PIN_143 -to VU_SHAVV_N[4]
+set_location_assignment PIN_142 -to VU_SHAVV_N[5]
+set_location_assignment PIN_141 -to VU_SHAVV_N[6]
+set_location_assignment PIN_138 -to VU_SHAVV_N[7]
+set_location_assignment PIN_137 -to VU_SHAP_N[0]
+set_location_assignment PIN_136 -to VU_SHAP_N[1]
+set_location_assignment PIN_135 -to VU_SHAP_N[2]
+set_location_assignment PIN_133 -to VU_SHAP_N[3]
+set_location_assignment PIN_132 -to VU_SHAP_N[4]
+set_location_assignment PIN_129 -to VU_SHAP_N[5]
+set_location_assignment PIN_128 -to VU_SHAP_N[6]
+set_location_assignment PIN_127 -to VU_SHAP_N[7]
+set_location_assignment PIN_126 -to VU_SHD[0]
+set_location_assignment PIN_125 -to VU_SHD[1]
+set_location_assignment PIN_124 -to VU_SHD[2]
+set_location_assignment PIN_121 -to VU_SHD[3]
+set_location_assignment PIN_120 -to VU_SHD[4]
+set_location_assignment PIN_119 -to VU_SHD[5]
+set_location_assignment PIN_115 -to VU_SHD[6]
+set_location_assignment PIN_114 -to VU_SHD[7]
+set_location_assignment PIN_106 -to VU_RAS_N
+set_location_assignment PIN_105 -to VU_CAS_N
+set_location_assignment PIN_104 -to VU_ZPZU_N
+set_location_assignment PIN_91 -to VU_CHTZU_N
+set_location_assignment PIN_90 -to VU_CHTVV_N
+set_location_assignment PIN_89 -to VU_ZPVV_N
+set_location_assignment PIN_100 -to VU_BLK_N
+set_location_assignment PIN_86 -to VU_STACK
+set_location_assignment PIN_85 -to VU_STROB_SOST
+set_location_assignment PIN_99 -to ADC_SND
+set_location_assignment PIN_98 -to "ADC_SND(n)"
+set_location_assignment PIN_87 -to ADC_SNDINT
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to DRAM_ADDR
+set_instance_assignment -name IO_STANDARD LVDS -to ADC_SND
+set_instance_assignment -name IO_STANDARD "2.5 V" -to VU_BLK_N
+set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to VU_BLK_N
+set_global_assignment -name ENABLE_SIGNALTAP ON
+set_global_assignment -name USE_SIGNALTAP_FILE stp1.stp
+set_instance_assignment -name VIRTUAL_PIN ON -to virt_cpu_do
+set_instance_assignment -name VIRTUAL_PIN ON -to virt_cpu_a
+set_instance_assignment -name VIRTUAL_PIN ON -to virt_sys_reset
+set_instance_assignment -name VIRTUAL_PIN ON -to virt_clk_cpu
+set_instance_assignment -name VIRTUAL_PIN ON -to virt_rom_addr
+set_instance_assignment -name VIRTUAL_PIN ON -to virt_rom_do
+set_global_assignment -name TIMEQUEST_MULTICORNER_ANALYSIS ON
+set_global_assignment -name SMART_RECOMPILE OFF
+set_instance_assignment -name VIRTUAL_PIN ON -to virt_vu_cas_n
+set_instance_assignment -name VIRTUAL_PIN ON -to virt_kvaz_control_word
+set_location_assignment PIN_10 -to VU_DIR_N
+set_global_assignment -name OPTIMIZATION_MODE BALANCED
+set_instance_assignment -name GLOBAL_SIGNAL GLOBAL_CLOCK -to clk_cpu
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to DRAM_ADDR
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to DRAM_DQ
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to DRAM_RAS_N
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to DRAM_CAS_N
+set_instance_assignment -name FAST_INPUT_REGISTER ON -to DRAM_DQ
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to DRAM_BA_0
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to DRAM_BA_1
+set_instance_assignment -name AUTO_GLOBAL_CLOCK ON -to DRAM_CLK
+set_location_assignment PIN_23 -to FREE_I1
+set_location_assignment PIN_11 -to FREE_IO2
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to FREE_IO2
+set_location_assignment PIN_101 -to AUDIO_R
+set_location_assignment PIN_103 -to AUDIO_L
+set_instance_assignment -name IO_STANDARD "2.5 V" -to AUDIO_L
+set_instance_assignment -name IO_STANDARD "2.5 V" -to AUDIO_R
+set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to AUDIO_L
+set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to AUDIO_R
+set_global_assignment -name VERILOG_FILE src/lesshadoks_top.v
+set_global_assignment -name VERILOG_FILE src/kvaz.v
+set_global_assignment -name VERILOG_FILE src/vu_bus.v
+set_global_assignment -name VERILOG_FILE src/mmuart/rtl/uart_transceiver.v
+set_global_assignment -name VERILOG_FILE src/mmuart/rtl/uart.v
+set_global_assignment -name VERILOG_FILE src/sdram/SDRAM_Controller.v
+set_global_assignment -name VERILOG_FILE src/soundinterfaces.v
+set_global_assignment -name VERILOG_FILE src/soundcodec.v
+set_global_assignment -name VHDL_FILE src/ay/ym2149.vhd
+set_global_assignment -name VERILOG_FILE src/ay/ayglue.v
+set_global_assignment -name VHDL_FILE src/ay/ay8910.vhd
+set_global_assignment -name VERILOG_FILE src/vm1/vm1.v
+set_global_assignment -name VERILOG_FILE src/vm1/myidc.v
+set_global_assignment -name VERILOG_FILE src/vm1/myalu.v
+set_global_assignment -name VERILOG_FILE src/vm1/datapath.v
+set_global_assignment -name VERILOG_FILE src/vm1/control11.v
+set_global_assignment -name QIP_FILE src/clocks/reloj.qip
+set_global_assignment -name CDF_FILE Chain1.cdf
+set_global_assignment -name QIP_FILE src/memories/testrom.qip
+set_global_assignment -name SIGNALTAP_FILE stp1.stp
+set_global_assignment -name QIP_FILE src/memories/testram.qip
+set_global_assignment -name SDC_FILE pompaient.out.sdc
+set_global_assignment -name SDC_FILE pompaient.sdc
+set_global_assignment -name SLD_FILE db/stp1_auto_stripped.stp
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
