@@ -19,3 +19,7 @@ Key hardware features:
   * ESP12F module
   * Audio output with amplifier
   * Analog input for internal audio mixing (using LVDS sigma-delta ADC)
+
+Board schematic
+---------------
+![Schematic](/kicad/shadok-cheap/shadok.pdf)
