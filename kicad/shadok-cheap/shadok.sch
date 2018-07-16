@@ -3429,6 +3429,20 @@ Wire Wire Line
 	10850 3450 11050 3450
 Text Label 8500 2800 2    47   ~ 0
 ~DDIR
+Text Notes 10850 2650 0    50   ~ 0
+BODGE IN REV1
+Wire Notes Line
+	11700 2750 10750 2750
+Wire Notes Line
+	10750 2750 10750 2950
+Wire Notes Line
+	11700 2750 11700 3000
+Text Notes 6450 800  0    50   ~ 0
+BODGE IN REV1
+Wire Notes Line
+	7100 900  7100 800 
+Wire Notes Line
+	7100 800  6450 800 
 Wire Bus Line
 	1100 550  1100 1950
 Wire Bus Line

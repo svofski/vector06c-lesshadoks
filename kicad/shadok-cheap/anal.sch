@@ -256,8 +256,6 @@ Wire Wire Line
 Wire Wire Line
 	9550 4500 9550 3750
 Wire Wire Line
-	9550 3750 8050 3750
-Wire Wire Line
 	7800 3750 7800 3800
 Connection ~ 9550 4500
 Wire Wire Line
@@ -266,8 +264,6 @@ Wire Wire Line
 	9700 4600 9700 3650
 Wire Wire Line
 	9700 3650 7200 3650
-Wire Wire Line
-	7200 3650 7200 3750
 Connection ~ 9700 4600
 Wire Wire Line
 	9700 4600 10000 4600
@@ -303,13 +299,9 @@ F 3 "" H 7850 4750 50  0001 C CNN
 	1    7850 4750
 	-1   0    0    1   
 $EndComp
-Wire Wire Line
-	7800 4100 7800 4150
 Connection ~ 7800 4300
 Wire Wire Line
 	7800 4300 8250 4300
-Wire Wire Line
-	7200 4100 7200 4150
 Connection ~ 7200 4550
 Wire Wire Line
 	7200 4550 8150 4550
@@ -381,14 +373,6 @@ F 3 "" H 10100 4600 50  0001 C CNN
 	1    10100 4600
 	0    -1   -1   0   
 $EndComp
-Wire Wire Line
-	7200 4150 7200 4550
-Wire Wire Line
-	7200 3750 7200 3800
-Wire Wire Line
-	8050 3750 7800 3750
-Wire Wire Line
-	7800 4150 7800 4300
 $Comp
 L device:R R804
 U 1 1 5BDA7975
@@ -653,4 +637,12 @@ Wire Wire Line
 	7850 4850 7850 4900
 Text Label 8800 5100 0    50   ~ 0
 POWERPAD
+Wire Wire Line
+	7800 3750 9550 3750
+Wire Wire Line
+	7200 3650 7200 3800
+Wire Wire Line
+	7800 4100 7800 4300
+Wire Wire Line
+	7200 4100 7200 4550
 $EndSCHEMATC
