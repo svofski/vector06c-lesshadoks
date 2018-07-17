@@ -189,7 +189,6 @@ set_instance_assignment -name FAST_INPUT_REGISTER ON -to DRAM_DQ
 set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to DRAM_BA_0
 set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to DRAM_BA_1
 set_instance_assignment -name AUTO_GLOBAL_CLOCK ON -to DRAM_CLK
-set_location_assignment PIN_23 -to FREE_I1
 set_location_assignment PIN_11 -to FREE_IO2
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to FREE_IO2
 set_location_assignment PIN_101 -to AUDIO_R
@@ -198,6 +197,10 @@ set_instance_assignment -name IO_STANDARD "2.5 V" -to AUDIO_L
 set_instance_assignment -name IO_STANDARD "2.5 V" -to AUDIO_R
 set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to AUDIO_L
 set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to AUDIO_R
+set_location_assignment PIN_23 -to VU_RESET
+set_instance_assignment -name PCI_IO ON -to VU_RESET
+set_global_assignment -name VHDL_FILE src/zpu/zpupkg.vhd
+set_global_assignment -name VHDL_FILE src/zpu/zpu_core_flex.vhd
 set_global_assignment -name VERILOG_FILE src/lesshadoks_top.v
 set_global_assignment -name VERILOG_FILE src/kvaz.v
 set_global_assignment -name VERILOG_FILE src/vu_bus.v
@@ -209,11 +212,6 @@ set_global_assignment -name VERILOG_FILE src/soundcodec.v
 set_global_assignment -name VHDL_FILE src/ay/ym2149.vhd
 set_global_assignment -name VERILOG_FILE src/ay/ayglue.v
 set_global_assignment -name VHDL_FILE src/ay/ay8910.vhd
-set_global_assignment -name VERILOG_FILE src/vm1/vm1.v
-set_global_assignment -name VERILOG_FILE src/vm1/myidc.v
-set_global_assignment -name VERILOG_FILE src/vm1/myalu.v
-set_global_assignment -name VERILOG_FILE src/vm1/datapath.v
-set_global_assignment -name VERILOG_FILE src/vm1/control11.v
 set_global_assignment -name QIP_FILE src/clocks/reloj.qip
 set_global_assignment -name CDF_FILE Chain1.cdf
 set_global_assignment -name QIP_FILE src/memories/testrom.qip

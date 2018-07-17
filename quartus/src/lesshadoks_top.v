@@ -60,7 +60,7 @@ module lesshadoks_top(
 	input		VU_STACK,		//  ВУ  СТЕК
 	input		VU_STROB_SOST, 		//  ВУ  СТРОБ.СОСТ	
 	
-	input		FREE_I1,
+	input		VU_RESET,		//  ВУ ~СБРОС (41)
 	input		FREE_IO2,
 
 	output 	[7:0]	virt_kvaz_control_word
@@ -68,7 +68,7 @@ module lesshadoks_top(
 	
 
 // Debug wires
-assign virt_kvaz_control_word = {kvaz_do_e,kvaz_debug[6:2], kvaz_debug[7], kvaz_memwr ^ kvaz_memrd};
+assign virt_kvaz_control_word = {sdram_pls, sdram_distributor, kvaz_memwr ^ kvaz_memrd};
 
 // --------------
 // CLOCK SECTION
@@ -186,18 +186,19 @@ wire kvaz_ub = ~decoded_a[0];
 wire [7:0] kvaz_do = kvaz_lb ? sdram_do[7:0] : sdram_do[15:8];
 	
 wire ce_cpu = 1'b1;	
-		
-	
-reg [15:0] sys_reset_counter = 1;
+
+// system reset debouncer	
+reg [5:0] sys_reset_counter = 1;
 wire sys_reset = |sys_reset_counter;
-always @(posedge clk_cpu or negedge BUTT1) begin
-	if (~BUTT1) begin
+always @(posedge clk_cpu) begin
+	if (~BUTT1 | VU_RESET) begin
 		sys_reset_counter <= 1;
 	end
 	else begin
 		if (sys_reset) sys_reset_counter <= sys_reset_counter + 1;
 	end
 end
+//
 	
 wire [21:0] sdram_addr;			// SDRAM addr, 4M words
 
@@ -243,12 +244,33 @@ SDRAM_Controller ramd(
 
 // приглашение выполнить рефреш когда кваз неактивен и приходит 
 // posdedge RAS_N без CAS_N
-reg sdram_pls;
+// эмпирические данные о частоте выборки:
+// кваз незадействован
+// 	30 раз за 100мкс, то есть 1 раз каждые 3.3мкс
+// 	или 19394 раза за 64мс, то есть в 4.7 раз чаще, чем требуемые 4096
+// кваз максимально загружен push/pop:
+//	15 раз за 100мкс, то есть 1 раз каждые 7мкс
+//	или 9143 раза за 64 мкс, то есть в 2.2 раза чаще, чем требуемые 4096
+// кваз максимально загружен mov m, m
+// 	21 раз за 100мкс, или 1 раз каждый 4.8мкс
+//	или 13333, или в 3.2 раза чаще, чем требуемые 4096
+
+// доступ для третьей стороны один свободный цикл из двух:
+// худшая оценка 14мкс, скорость заполнения 142857 байт/с
+// лучшая оценка 6.6мкс, скорость заполнения 303030 байт/с
+
+
+// когда вообще не страшно лезть в SDRAM
+wire sdram_free_access_slot = posedge_ras_n & ccas_n & VU_BLK_N;
+// крышка парораспределителя
+reg sdram_distributor;
+// команда запуска авторефреша
+wire sdram_pls = sdram_distributor & sdram_free_access_slot;
+// разрешение доступа зпу
+wire sdram_zpu = ~sdram_distributor & sdram_free_access_slot;
 always @(posedge clk_cpu) begin: _gen_refresh_cmd
-	if (posedge_ras_n & ccas_n & VU_BLK_N)
-		sdram_pls <= 1'b1;
-	else
-		sdram_pls <= 1'b0;
+	if (sdram_free_access_slot)
+		sdram_distributor <= ~sdram_distributor;
 end
 
 `else
@@ -276,5 +298,26 @@ soundinterfaces soundinterfaces(.clk(clk_cpu), .reset(sys_reset),
 	.negedge_zpvv_n(negedge_zpvv_n), .negedge_chtvv_n(negedge_chtvv_n),
 	.audio_l(AUDIO_L), .audio_r(AUDIO_R));
 
-
+	
+//wire [31:0] 	sdram32_do;
+//wire [31:0] 	sdram32_di;
+//wire [15:0] 	zpu_mem_addr;
+//wire 		zpu_mem_wren;
+//wire 		zpu_mem_rden;
+//wire [3:0] 	zpu_writemask;	
+//wire 		zpu_break;	
+//zpu_core_flex zpushnik(.clk(clk_cpu), .reset(sys_reset),
+//	.enable(1),
+//	.in_mem_busy(sdram_busy),
+//	.mem_read(sdram32_do),
+//	.mem_write(sdram32_di),
+//	.out_mem_addr(zpu_mem_addr),
+//	.out_mem_writeEnable(zpu_mem_wren),
+//	.out_mem_readEnable(zpu_mem_rden),
+//	.mem_writeMask(zpu_writemask),
+//	.interrupt(0),
+//	.break(zpu_break)
+//      );	
+	
+	
 endmodule
