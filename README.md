@@ -6,12 +6,12 @@
 ![ЛЕШАДОК ПОМПЕ](/doc/photos/lesshadoks1.jpg)
 
 Features (real and planned):
-  * RAM disk expansion in SDRAM
-  * AY and other sound device emulation
-  * Joystick ports
-  * Floppy disk emulator 
-  * Floppy images on SD card or downloaded from the internets
-  * ESP12F working as FPGA configurator
+  - [x] RAM disk expansion in SDRAM
+  - [x] AY and other sound device emulation
+  - [ ] Joystick ports
+  - [ ] Floppy disk emulator 
+  - [ ] Floppy images on SD card or downloaded from the internets
+  - [ ] ESP12F working as FPGA configurator
   
 Key hardware features:
   * Main chip: EP4CE6 Intel Cyclone IV device
@@ -22,4 +22,4 @@ Key hardware features:
 
 Board schematic
 ---------------
-![Schematic](/kicad/shadok-cheap/shadok.pdf)
+[Schematic](/kicad/shadok-cheap/shadok.pdf) (pdf)
