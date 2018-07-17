@@ -1422,6 +1422,80 @@ Wire Wire Line
 	9500 1450 10100 1450
 Wire Wire Line
 	9500 1650 10100 1650
+Text HLabel 3900 4700 2    50   Input ~ 0
+~DDIR
+$Comp
+L transistors:BC817 Q?
+U 1 1 5B4E5996
+P 9150 6050
+F 0 "Q?" H 9341 6096 50  0000 L CNN
+F 1 "BC817" H 9341 6005 50  0000 L CNN
+F 2 "TO_SOT_Packages_SMD:SOT-23" H 9350 5975 50  0001 L CIN
+F 3 "http://www.fairchildsemi.com/ds/BC/BC817.pdf" H 9150 6050 50  0001 L CNN
+	1    9150 6050
+	1    0    0    -1  
+$EndComp
+$Comp
+L device:R R?
+U 1 1 5B4E92C7
+P 8800 6050
+F 0 "R?" V 8900 6000 50  0000 C CNN
+F 1 "10K" V 8800 6050 50  0000 C CNN
+F 2 "Resistors_SMD:R_0805" V 8730 6050 50  0001 C CNN
+F 3 "" H 8800 6050 50  0001 C CNN
+	1    8800 6050
+	0    1    1    0   
+$EndComp
+$Comp
+L device:R R?
+U 1 1 5B51308C
+P 9250 5700
+F 0 "R?" V 9350 5650 50  0000 C CNN
+F 1 "10K" V 9250 5700 50  0000 C CNN
+F 2 "Resistors_SMD:R_0805" V 9180 5700 50  0001 C CNN
+F 3 "" H 9250 5700 50  0001 C CNN
+	1    9250 5700
+	-1   0    0    1   
+$EndComp
+$Comp
+L power:+3V3 #PWR?
+U 1 1 5B5130EE
+P 9250 5550
+F 0 "#PWR?" H 9250 5400 50  0001 C CNN
+F 1 "+3V3" H 9265 5723 50  0000 C CNN
+F 2 "" H 9250 5550 50  0001 C CNN
+F 3 "" H 9250 5550 50  0001 C CNN
+	1    9250 5550
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 5B53CE61
+P 9250 6250
+F 0 "#PWR?" H 9250 6000 50  0001 C CNN
+F 1 "GND" H 9255 6077 50  0000 C CNN
+F 2 "" H 9250 6250 50  0001 C CNN
+F 3 "" H 9250 6250 50  0001 C CNN
+	1    9250 6250
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7950 6050 8650 6050
+Text Label 7950 6050 0    50   ~ 0
+~СБРОСЪ
+Wire Wire Line
+	9250 5850 10100 5850
+Connection ~ 9250 5850
+Text HLabel 10100 5850 2    50   Input ~ 0
+СБРОС
+Wire Notes Line
+	8600 5300 8600 6500
+Wire Notes Line
+	8600 6500 10500 6500
+Wire Notes Line
+	10500 6500 10500 5300
+Wire Notes Line
+	10500 5300 8600 5300
 Wire Bus Line
 	5250 3650 5250 4350
 Wire Bus Line
@@ -1432,6 +1506,6 @@ Wire Bus Line
 	4300 4350 4300 5550
 Wire Bus Line
 	1500 4850 1500 5650
-Text HLabel 3900 4700 2    50   Input ~ 0
-~DDIR
+Text Notes 9750 6450 0    50   ~ 0
+BODGE IN REV 1
 $EndSCHEMATC

@@ -68,7 +68,11 @@ module lesshadoks_top(
 	
 
 // Debug wires
-assign virt_kvaz_control_word = {sdram_pls, sdram_distributor, kvaz_memwr ^ kvaz_memrd};
+assign virt_kvaz_control_word = {sdram_pls, 1'b0, kvaz_memwr ^ kvaz_memrd};
+
+wire sys_reset;
+reset_debouncer reset_debouncer(.clk(clk_cpu), .butt_n(BUTT1), 
+	.vu_reset(VU_RESET), .reset_o(sys_reset));	
 
 // --------------
 // CLOCK SECTION
@@ -134,6 +138,8 @@ assign 		VU_DIR_N = ~kvaz_do_e;
 parameter KVAZ_MEMRD_S0 = 0, KVAZ_MEMRD_S1 = 1, KVAZ_MEMRD_S2 = 2, KVAZ_MEMRD_S3 = 3;
 reg [2:0] kvaz_memrd_state;
 wire	  kvaz_memrd_flag = (~VU_BLK_N) & negedge_chtzu_n;
+reg	  kvaz_write;
+reg 	  kvaz_read;
 always @(posedge clk_cpu or posedge sys_reset) begin: _kvaz_memrd_sync
 	if (sys_reset) begin
 		kvaz_memrd_state <= KVAZ_MEMRD_S0;
@@ -141,13 +147,13 @@ always @(posedge clk_cpu or posedge sys_reset) begin: _kvaz_memrd_sync
 	else 
 	case (kvaz_memrd_state)
 	KVAZ_MEMRD_S0:	casez ({kvaz_memwr,kvaz_memrd_flag,decoded_a_valid}) 
-			3'b1??:	begin {sdram_write,sdram_read} <= 2'b10; kvaz_memrd_state <= KVAZ_MEMRD_S3; end
-			3'b011: begin {sdram_write,sdram_read} <= 2'b01; kvaz_memrd_state <= KVAZ_MEMRD_S3; end
-			3'b010: begin {sdram_write,sdram_read} <= 2'b00; kvaz_memrd_state <= KVAZ_MEMRD_S1; end
+			3'b1??:	begin {kvaz_write,kvaz_read} <= 2'b10; kvaz_memrd_state <= KVAZ_MEMRD_S3; end
+			3'b011: begin {kvaz_write,kvaz_read} <= 2'b01; kvaz_memrd_state <= KVAZ_MEMRD_S3; end
+			3'b010: begin {kvaz_write,kvaz_read} <= 2'b00; kvaz_memrd_state <= KVAZ_MEMRD_S1; end
 			endcase
-	KVAZ_MEMRD_S1:	if (decoded_a_valid) begin {sdram_write,sdram_read} <= 2'b01; kvaz_memrd_state <= KVAZ_MEMRD_S3; end
+	KVAZ_MEMRD_S1:	if (decoded_a_valid) begin {kvaz_write,kvaz_read} <= 2'b01; kvaz_memrd_state <= KVAZ_MEMRD_S3; end
 	KVAZ_MEMRD_S3:	begin
-			{sdram_read,sdram_write} <= 2'b00;
+			{kvaz_write,kvaz_read} <= 2'b00;
 			kvaz_memrd_state <= KVAZ_MEMRD_S0;
 			end
 	endcase
@@ -179,37 +185,10 @@ kvaz ramdisk(
     .debug(kvaz_debug)
 );
 
-wire [17:0] kvaz_sdram_addr = {kvaz_page, decoded_a[15:1]};
-wire kvaz_lb = decoded_a[0];
-wire kvaz_ub = ~decoded_a[0];
-		
-wire [7:0] kvaz_do = kvaz_lb ? sdram_do[7:0] : sdram_do[15:8];
+wire [17:0] kvaz_addr = {kvaz_page, decoded_a};		
+wire [7:0] kvaz_do = sdram_lb ? sdram_do[7:0] : sdram_do[15:8];
 	
 wire ce_cpu = 1'b1;	
-
-// system reset debouncer	
-reg [5:0] sys_reset_counter = 1;
-wire sys_reset = |sys_reset_counter;
-always @(posedge clk_cpu) begin
-	if (~BUTT1 | VU_RESET) begin
-		sys_reset_counter <= 1;
-	end
-	else begin
-		if (sys_reset) sys_reset_counter <= sys_reset_counter + 1;
-	end
-end
-//
-	
-wire [21:0] sdram_addr;			// SDRAM addr, 4M words
-
-assign sdram_addr = kvaz_sdram_addr; 
-
-wire [15:0] sdram_do;
-wire sdram_ub = kvaz_ub;
-wire sdram_lb = kvaz_lb;
-wire sdram_busy;
-reg sdram_read;			// read request to controller
-reg sdram_write;		// write request to controller
 
 `ifdef SDRAM_TRU
 
@@ -236,42 +215,11 @@ SDRAM_Controller ramd(
     .we_n(~sdram_write), 		// write request neg
     .ilb_n(~sdram_lb),			// lower byte mask
     .iub_n(~sdram_ub),			// upper byte mask
-    .datar(sdram_do),			// data from sdram [15:0]
+    .datar(sdram_dq),			// data from sdram [15:0]
     .membusy(sdram_busy)		// sdram busy flag
    ,.refresh(sdram_pls)
 );
 
-
-// приглашение выполнить рефреш когда кваз неактивен и приходит 
-// posdedge RAS_N без CAS_N
-// эмпирические данные о частоте выборки:
-// кваз незадействован
-// 	30 раз за 100мкс, то есть 1 раз каждые 3.3мкс
-// 	или 19394 раза за 64мс, то есть в 4.7 раз чаще, чем требуемые 4096
-// кваз максимально загружен push/pop:
-//	15 раз за 100мкс, то есть 1 раз каждые 7мкс
-//	или 9143 раза за 64 мкс, то есть в 2.2 раза чаще, чем требуемые 4096
-// кваз максимально загружен mov m, m
-// 	21 раз за 100мкс, или 1 раз каждый 4.8мкс
-//	или 13333, или в 3.2 раза чаще, чем требуемые 4096
-
-// доступ для третьей стороны один свободный цикл из двух:
-// худшая оценка 14мкс, скорость заполнения 142857 байт/с
-// лучшая оценка 6.6мкс, скорость заполнения 303030 байт/с
-
-
-// когда вообще не страшно лезть в SDRAM
-wire sdram_free_access_slot = posedge_ras_n & ccas_n & VU_BLK_N;
-// крышка парораспределителя
-reg sdram_distributor;
-// команда запуска авторефреша
-wire sdram_pls = sdram_distributor & sdram_free_access_slot;
-// разрешение доступа зпу
-wire sdram_zpu = ~sdram_distributor & sdram_free_access_slot;
-always @(posedge clk_cpu) begin: _gen_refresh_cmd
-	if (sdram_free_access_slot)
-		sdram_distributor <= ~sdram_distributor;
-end
 
 `else
 
@@ -290,15 +238,13 @@ assign sdram_busy = 1'b0;
 
 `endif
 		
-wire [15:0] data_to_sdram = {VU_SHD,VU_SHD};
-
 wire [7:0] sound_data_o;
 soundinterfaces soundinterfaces(.clk(clk_cpu), .reset(sys_reset),
 	.shavv(shavv_r), .data(VU_SHD), .data_o(sound_data_o), 
 	.negedge_zpvv_n(negedge_zpvv_n), .negedge_chtvv_n(negedge_chtvv_n),
 	.audio_l(AUDIO_L), .audio_r(AUDIO_R));
 
-	
+
 //wire [31:0] 	sdram32_do;
 //wire [31:0] 	sdram32_di;
 //wire [15:0] 	zpu_mem_addr;
@@ -319,5 +265,53 @@ soundinterfaces soundinterfaces(.clk(clk_cpu), .reset(sys_reset),
 //	.break(zpu_break)
 //      );	
 	
+wire [15:0] data_to_sdram;
+wire sdram_lb, sdram_ub;
+wire sdram_read, sdram_write;
+wire [21:0] sdram_addr;			// SDRAM addr, 4M words
+wire [15:0] sdram_dq;			// raw from sdram controller
+wire [31:0] sdram_do;			// ready for consumption, including 32-bit
+wire sdram_busy;
+wire sdram_pls;
+
+// когда вообще не страшно лезть в SDRAM
+wire sdram_free_access_slot = posedge_ras_n & ccas_n & VU_BLK_N;
+
+sdram_arbiter bus_arbiter(.clk(clk_cpu), .reset(sys_reset),
+	.vu_adrs(kvaz_addr),
+	.vu_data(VU_SHD),
+	.vu_write(kvaz_write),
+	.vu_read(kvaz_read),
+	.access_slot(sdram_free_access_slot),
+	
+	.sdram_addr(sdram_addr),
+	.data_to_sdram(data_to_sdram),
+	.sdram_read(sdram_read),
+	.sdram_write(sdram_write),
+	.sdram_lb(sdram_lb), .sdram_ub(sdram_ub),
+	.sdram_refresh(sdram_pls),
+	.sdram_dq(sdram_dq),
+	
+	.q(sdram_do),
+	);
+	
 	
 endmodule
+
+
+
+
+module reset_debouncer(input clk, input butt_n, input vu_reset, output reset_o);
+
+// дебаунса только чуть чуть, иначе он будет держаться, 
+// когда уже начала исполняться программа
+reg [5:0] ctr = 1;
+assign reset_o = |ctr;
+always @(posedge clk)
+	if (~butt_n | vu_reset) 
+		ctr <= 1;
+	else if (reset_o)
+		ctr <= ctr + 1;
+
+endmodule
+

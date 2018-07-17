@@ -199,9 +199,8 @@ set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to AUDIO_L
 set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to AUDIO_R
 set_location_assignment PIN_23 -to VU_RESET
 set_instance_assignment -name PCI_IO ON -to VU_RESET
-set_global_assignment -name VHDL_FILE src/zpu/zpupkg.vhd
-set_global_assignment -name VHDL_FILE src/zpu/zpu_core_flex.vhd
 set_global_assignment -name VERILOG_FILE src/lesshadoks_top.v
+set_global_assignment -name VERILOG_FILE src/sdram_arbitre.v
 set_global_assignment -name VERILOG_FILE src/kvaz.v
 set_global_assignment -name VERILOG_FILE src/vu_bus.v
 set_global_assignment -name VERILOG_FILE src/mmuart/rtl/uart_transceiver.v
@@ -209,6 +208,8 @@ set_global_assignment -name VERILOG_FILE src/mmuart/rtl/uart.v
 set_global_assignment -name VERILOG_FILE src/sdram/SDRAM_Controller.v
 set_global_assignment -name VERILOG_FILE src/soundinterfaces.v
 set_global_assignment -name VERILOG_FILE src/soundcodec.v
+set_global_assignment -name VHDL_FILE src/zpu/zpupkg.vhd
+set_global_assignment -name VHDL_FILE src/zpu/zpu_core_flex.vhd
 set_global_assignment -name VHDL_FILE src/ay/ym2149.vhd
 set_global_assignment -name VERILOG_FILE src/ay/ayglue.v
 set_global_assignment -name VHDL_FILE src/ay/ay8910.vhd

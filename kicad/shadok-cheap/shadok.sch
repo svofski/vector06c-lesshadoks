@@ -5,10 +5,10 @@ EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 8
-Title "Les Shadoks для Вектора-06ц"
+Title "ЛЕШАДОК ПОМПЕ для Вектора-06ц"
 Date ""
-Rev ""
-Comp ""
+Rev "2"
+Comp "http://sensi.org/~~svo"
 Comment1 "Les Shadoks pompaient"
 Comment2 ""
 Comment3 ""
@@ -816,7 +816,7 @@ Wire Wire Line
 Connection ~ 1050 3650
 Wire Wire Line
 	1050 3650 1400 3650
-Text Notes 7550 3100 0    28   ~ 0
+Text Notes 7400 3100 0    28   ~ 0
 MSEL=[0,1,0]: AS (EPCS4) 3.3V\nMSEL=[0,0,0]: PS (ESP12F) 3.3V
 Text Label 8600 4100 2    47   ~ 0
 DATA0
@@ -1071,7 +1071,7 @@ Wire Wire Line
 Wire Wire Line
 	1400 3050 1200 3050
 Wire Wire Line
-	6700 3050 7250 3050
+	6700 3050 7100 3050
 Text Label 10200 2950 0    47   ~ 0
 DCLK/SPICLK
 Text Label 10200 2850 0    47   ~ 0
@@ -3024,7 +3024,7 @@ $EndBitmap
 Wire Wire Line
 	5800 6200 5800 6600
 $Sheet
-S 8500 1450 650  1550
+S 8500 1450 650  1600
 U 5A80A983
 F0 "BUS" 50
 F1 "bus.sch" 50
@@ -3041,6 +3041,7 @@ F11 "~ЧТВВ" I L 8500 2150 50
 F12 "~ЗПВВ" I L 8500 2250 50 
 F13 "СТЕК" I L 8500 2650 50 
 F14 "~DDIR" I L 8500 2800 50 
+F15 "СБРОС" I L 8500 3000 50 
 $EndSheet
 Text Label 10200 3150 0    47   ~ 0
 ~SD_SS
@@ -3164,11 +3165,9 @@ F 3 "" H 750 7250 50  0001 C CNN
 	-1   0    0    1   
 $EndComp
 Text Label 650  4050 0    47   ~ 0
-FREE_I1
-Text Label 7300 1050 2    47   ~ 0
+СБРОС
+Text Label 7300 1200 2    47   ~ 0
 FREE_IO2
-Text Label 7300 1150 2    47   ~ 0
-FREE_I1
 $Comp
 L power:+3V3 #PWR05
 U 1 1 5C0D6068
@@ -3264,29 +3263,29 @@ BUTT1
 Text Label 1400 4250 2    50   ~ 0
 BUTT1
 Wire Wire Line
-	7300 1050 7450 1050
+	7300 1200 7450 1200
 Wire Wire Line
-	7300 1150 7450 1150
+	7300 1050 7450 1050
 $Comp
 L conn:TEST_1P J103
 U 1 1 5A82FD6E
-P 7450 1050
-F 0 "J103" V 7404 1238 50  0000 L CNN
-F 1 "TEST_1P" V 7250 1050 50  0001 L CNN
-F 2 "wirepads:WIREPAD_SMD_TINY" H 7650 1050 50  0001 C CNN
-F 3 "" H 7650 1050 50  0001 C CNN
-	1    7450 1050
+P 7450 1200
+F 0 "J103" V 7404 1388 50  0000 L CNN
+F 1 "TEST_1P" V 7250 1200 50  0001 L CNN
+F 2 "wirepads:WIREPAD_SMD_TINY" H 7650 1200 50  0001 C CNN
+F 3 "" H 7650 1200 50  0001 C CNN
+	1    7450 1200
 	0    1    1    0   
 $EndComp
 $Comp
 L conn:TEST_1P J104
 U 1 1 5A82FDEF
-P 7450 1150
-F 0 "J104" V 7404 1338 50  0000 L CNN
-F 1 "TEST_1P" V 7550 1150 50  0001 L CNN
-F 2 "wirepads:WIREPAD_SMD_TINY" H 7650 1150 50  0001 C CNN
-F 3 "" H 7650 1150 50  0001 C CNN
-	1    7450 1150
+P 7450 1050
+F 0 "J104" V 7404 1238 50  0000 L CNN
+F 1 "TEST_1P" V 7550 1050 50  0001 L CNN
+F 2 "wirepads:WIREPAD_SMD_TINY" H 7650 1050 50  0001 C CNN
+F 3 "" H 7650 1050 50  0001 C CNN
+	1    7450 1050
 	0    1    1    0   
 $EndComp
 $Comp
@@ -3373,12 +3372,12 @@ Text Label 8500 2650 2    47   ~ 0
 $Comp
 L power:GND #PWR0147
 U 1 1 5B4DD7CA
-P 7250 3050
-F 0 "#PWR0147" H 7250 2800 50  0001 C CNN
-F 1 "GND" V 7255 2922 50  0000 R CNN
-F 2 "" H 7250 3050 50  0001 C CNN
-F 3 "" H 7250 3050 50  0001 C CNN
-	1    7250 3050
+P 7100 3050
+F 0 "#PWR0147" H 7100 2800 50  0001 C CNN
+F 1 "GND" V 7105 2922 50  0000 R CNN
+F 2 "" H 7100 3050 50  0001 C CNN
+F 3 "" H 7100 3050 50  0001 C CNN
+	1    7100 3050
 	0    -1   -1   0   
 $EndComp
 NoConn ~ 1400 2450
@@ -3443,6 +3442,14 @@ Wire Notes Line
 	7100 900  7100 800 
 Wire Notes Line
 	7100 800  6450 800 
+Text Label 8500 3000 2    47   ~ 0
+СБРОС
+Text Label 7300 1050 2    47   ~ 0
+СБРОС
+Wire Notes Line
+	7000 1000 6900 1000
+Wire Notes Line
+	6900 1000 6900 800 
 Wire Bus Line
 	1100 550  1100 1950
 Wire Bus Line
