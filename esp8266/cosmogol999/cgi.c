@@ -83,3 +83,19 @@ int ICACHE_FLASH_ATTR tplCounter(HttpdConnData *connData, char *token, void **ar
         httpdSend(connData, bptr, -1);
 	return HTTPD_CGI_DONE;
 }
+
+int ICACHE_FLASH_ATTR cgiRedirectApClientToHostname(HttpdConnData *connData) {
+	uint32 *remadr;
+	struct ip_info apip;
+	int x = sdk_wifi_get_opmode();
+	//Check if we have an softap interface; bail out if not
+	if (x!=2 && x!=3) return HTTPD_CGI_NOTFOUND;
+	remadr=(uint32 *)connData->remote_ip;
+	sdk_wifi_get_ip_info(SOFTAP_IF, &apip);
+	if ((*remadr & apip.netmask.addr) == (apip.ip.addr & apip.netmask.addr)) {
+		return cgiRedirectToHostname(connData);
+	} else {
+		return HTTPD_CGI_NOTFOUND;
+	}
+}
+

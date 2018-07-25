@@ -330,7 +330,7 @@ int ICACHE_FLASH_ATTR cgiRedirectToHostname(HttpdConnData *connData) {
 	return HTTPD_CGI_DONE;
 }
 
-
+#if 0
 //Same as above, but will only redirect clients with an IP that is in the range of
 //the SoftAP interface. This should preclude clients connected to the STA interface
 //to be redirected to nowhere.
@@ -352,6 +352,7 @@ int ICACHE_FLASH_ATTR cgiRedirectApClientToHostname(HttpdConnData *connData) {
 	return HTTPD_CGI_NOTFOUND;
 #endif
 }
+#endif
 
 
 //Add data to the send buffer. len is the length of the data. If len is -1
