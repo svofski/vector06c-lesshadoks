@@ -7,7 +7,6 @@
 <body>
 <div id="main">
 <h1>ЛЕШАДОК ПОМПЕ</h1>
-<p>Билд 2
 <p>
 Это заглавная страница веб-интерфейса платы ЛЕШАДОК ПОМПЕ.
 <ul>
@@ -20,4 +19,5 @@
 <img src="shadoks/pompaient.jpg"><br />
 </p>
 </div>
+<div id="build-id">%build-id%</div>
 </body></html>

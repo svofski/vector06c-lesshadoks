@@ -96,3 +96,13 @@ void nconfig_set_input(int is_input)
         gpio16_output_conf();
     }
 }
+
+void io_shutdown_spi()
+{
+    gpio_set_iomux_function(12, IOMUX_GPIO12_FUNC_GPIO);
+    gpio_set_iomux_function(13, IOMUX_GPIO13_FUNC_GPIO);
+    gpio_set_iomux_function(14, IOMUX_GPIO14_FUNC_GPIO);
+    gpio_disable(12);
+    gpio_disable(13);
+    gpio_disable(14);
+}

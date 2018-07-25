@@ -79,3 +79,10 @@ body {
     margin-top:0.7em;
     color: #eee;
 }
+
+#build-id {
+    color: #977;
+    text-align: center;
+    margin: 1em;
+    font-size: small;
+}

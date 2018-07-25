@@ -135,6 +135,7 @@ void user_init(void) {
     ioInit();
     spiffs_init();
     spiffs_configure_fpga();
+    io_shutdown_spi();
 
     setup_rboot();
 

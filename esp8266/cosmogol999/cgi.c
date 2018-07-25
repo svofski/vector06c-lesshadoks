@@ -70,12 +70,16 @@ static int hitCounter=0;
 //Template code for the counter on the index page.
 int ICACHE_FLASH_ATTR tplCounter(HttpdConnData *connData, char *token, void **arg) {
 	char buff[128];
+        char *bptr = buff;
 	if (token==NULL) return HTTPD_CGI_DONE;
 
 	if (strcmp(token, "counter")==0) {
 		hitCounter++;
 		sprintf(buff, "%d", hitCounter);
-	}
-	httpdSend(connData, buff, -1);
+	} 
+        else if (strcmp(token, "build-id") == 0) {
+                bptr = BUILD_ID; 
+        }
+        httpdSend(connData, bptr, -1);
 	return HTTPD_CGI_DONE;
 }
