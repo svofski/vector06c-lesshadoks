@@ -21,7 +21,6 @@ some pictures of cats.
 #include <libesphttpd/httpd.h>
 #include <libesphttpd/httpdespfs.h>
 #include <libesphttpd/cgiwifi.h>
-#include <libesphttpd/cgiflash.h>
 #include <libesphttpd/auth.h>
 #include <libesphttpd/espfs.h>
 #include <libesphttpd/captdns.h>
@@ -35,32 +34,15 @@ some pictures of cats.
 #include <queue.h>
 #include <esp/uart.h>
 
+#include "rboot-api.h"
 #include "io.h"
 #include "cgi.h"
 #include "cgispiffs.h"
+#include "cgirboot.h"
 
 #define AP_SSID "Вектор-06Ц SoftAP"
 #define AP_PSK "pompaient"
 
-CgiUploadFlashDef uploadParams={
-	.type=CGIFLASH_TYPE_FW,
-	.fw1Pos=0x2000,
-	.fw2Pos=((FLASH_SIZE*1024*1024)/2)+0x2000,
-	.fwSize=((FLASH_SIZE*1024*1024)/2)-0x2000,
-	.tagName=LIBESPHTTPD_OTA_TAGNAME
-};
-
-
-/*
-This is the main url->function dispatching data struct.
-In short, it's a struct with various URLs plus their handlers. The handlers can
-be 'standard' CGI functions you wrote, or 'special' CGIs requiring an argument.
-They can also be auth-functions. An asterisk will match any url starting with
-everything before the asterisks; "*" matches everything. The list will be
-handled top-down, so make sure to put more specific rules above the more
-general ones. Authorization things (like authBasic) act as a 'barrier' and
-should be placed above the URLs they protect.
-*/
 HttpdBuiltInUrl builtInUrls[]={
 	{"*", cgiRedirectApClientToHostname, "esp8266.nonet"},
 	{"/", cgiRedirect, "/index.tpl"},
@@ -76,9 +58,9 @@ HttpdBuiltInUrl builtInUrls[]={
 	{"/led.cgi", cgiLed, NULL},
 
 	{"/flash/", cgiRedirect, "/flash/index.html"},
-	{"/flash/next", cgiGetFirmwareNext, &uploadParams},
-	{"/flash/upload", cgiUploadFirmware, &uploadParams},
-	{"/flash/reboot", cgiRebootFirmware, NULL},
+	{"/flash/next", cgiGetFirmwareNext2, NULL},
+	{"/flash/upload", cgiUploadFirmware2, NULL},
+	{"/flash/reboot", cgiRebootFirmware2, NULL},
 
 	{"/wifi", cgiRedirect, "/wifi/wifi.tpl"},
 	{"/wifi/", cgiRedirect, "/wifi/wifi.tpl"},
@@ -128,6 +110,24 @@ void wifiInit() {
     }
 }
 
+static void setup_rboot()
+{
+    printf("6 rboot_get_current_rom: %d\n", rboot_get_current_rom());
+    rboot_config rconfig = rboot_get_config();
+    printf("rboot magic=%x version=%d mode=%d current_rom=%d gpio_rom=%d "
+            "count=%d\n", rconfig.magic, rconfig.version, rconfig.mode, 
+            rconfig.current_rom, rconfig.gpio_rom, rconfig.count);
+    for (int i = 0; i < MAX_ROMS; ++i) {
+        printf("%c @%08x\n", (i==rconfig.current_rom)?'*':' ', rconfig.roms[i]);
+    }
+
+    if (rconfig.roms[1] != 0x102000) {
+        printf("rboot config is probably correct for someone else. Fixing it.\n");
+        rconfig.roms[1] = 0x102000;
+        rboot_set_config(&rconfig);
+    }
+}
+
 //Main routine. Initialize stdout, the I/O, filesystem and the webserver and we're done.
 void user_init(void) {
     uart_set_baud(0, 115200);
@@ -135,6 +135,8 @@ void user_init(void) {
     ioInit();
     spiffs_init();
     spiffs_configure_fpga();
+
+    setup_rboot();
 
     wifiInit();
     captdnsInit();
@@ -144,3 +146,4 @@ void user_init(void) {
 
     printf("\nReady\n");
 }
+

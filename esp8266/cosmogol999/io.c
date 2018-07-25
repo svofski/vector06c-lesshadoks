@@ -27,6 +27,8 @@
 
 #define LEDGPIO 2
 #define BTNGPIO 0
+#define CONF_DONEGPIO 5
+#define nCONFIGGPIO 16
 
 #ifndef ESP32
 static ETSTimer resetBtntimer;
@@ -60,13 +62,37 @@ static void resetBtnTimerCb(void *arg) {
 void ioInit() {
 	PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO2_U, FUNC_GPIO2);
 	PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO0_U, FUNC_GPIO0);
-	sdk_gpio_output_set(0, 0, (1<<LEDGPIO), (1<<BTNGPIO));
+        // CONF_DONE on GPIO5 is input
+        PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO5_U, FUNC_GPIO5);
+	sdk_gpio_output_set(0, 0, (1<<LEDGPIO), 
+                (1<<BTNGPIO) || (1<<CONF_DONEGPIO));
 
-        // nCONFIG on GPIO16 is output
-        gpio16_output_conf();
+        // nCONFIG on GPIO16 is input while not in use
+        // gpio16 is a special snowflake
+        //gpio16_output_conf();
+        //gpio16_output_set(1);
+        gpio16_input_conf();
 
 	sdk_os_timer_disarm(&resetBtntimer);
 	sdk_os_timer_setfn(&resetBtntimer, resetBtnTimerCb, NULL);
 	sdk_os_timer_arm(&resetBtntimer, 500, 1);
 }
 
+int read_conf_done() 
+{
+    return GPIO_REG_READ(GPIO_IN_ADDRESS) & (1<<CONF_DONEGPIO);
+}
+
+void nconfig_set(int value)
+{
+    gpio16_output_set(value);
+}
+
+void nconfig_set_input(int is_input)
+{
+    if (is_input) {
+        gpio16_input_conf();
+    } else {
+        gpio16_output_conf();
+    }
+}
