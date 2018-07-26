@@ -10,7 +10,11 @@ SPIFFS_SIZE = 0x200000
 SPIFFS_SINGLETON = 0
 
 ## chip id 4016, 32 mbit / 4 megabytes
-FLASH_SIZE = 32
+# lie about flash size, otherwise wifi params don't persist properly
+# FLASH_SIZE = 16
+FLASH_SIZE=32
+FLASH_MODE=dio
+FLASH_SPEED=80
 # Lie about flash size, ota only builds well with 1 meg size
 OTA_FLASH_SIZE_K=1024
 

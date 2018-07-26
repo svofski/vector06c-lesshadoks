@@ -40,7 +40,7 @@ some pictures of cats.
 #include "cgispiffs.h"
 #include "cgirboot.h"
 
-#define AP_SSID "Вектор-06Ц SoftAP"
+#define AP_SSID "ЛЕШАДОК ПОМПЕ"
 #define AP_PSK "pompaient"
 
 HttpdBuiltInUrl builtInUrls[]={
@@ -77,6 +77,7 @@ HttpdBuiltInUrl builtInUrls[]={
 void wifiInit() {
     struct ip_info ap_ip;
     uint8_t sdk_wifi_get_opmode();
+    // -- can't access this :( system_phy_set_max_tpw(0);
     switch(sdk_wifi_get_opmode()) {
         case STATIONAP_MODE:
         case SOFTAP_MODE:
@@ -145,6 +146,28 @@ void user_init(void) {
     espFsInit((void*)(_binary_build_web_espfs_bin_start));
     httpdInit(builtInUrls, 80);
 
-    printf("\nReady\n");
+    sdk_wifi_set_sleep_type(WIFI_SLEEP_MODEM);
+
+    //sdk_system_deep_sleep(1000); -- what to do after deep sleep? 
+
+
+    printf("\nuser_init() done\n");
 }
 
+//static int count = 0;
+//void vApplicationIdleHook(void) {}
+//void vApplicationTickHook(void)
+//{
+//    //sdk_wifi_set_sleep_type(WIFI_SLEEP_MODEM);
+//    if (sdk_wifi_get_opmode() == STATION_MODE) {
+//        ++count;
+//        if (count == 100) {
+//            sdk_wifi_station_stop();
+//            printf("stop\n");
+//        } else if (count == 200) {
+//            sdk_wifi_station_start();
+//            count = 0;
+//            printf("start\n");
+//        }
+//    }
+//}

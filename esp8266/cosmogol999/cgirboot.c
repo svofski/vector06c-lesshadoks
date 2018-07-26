@@ -160,8 +160,10 @@ static ETSTimer resetTimer;
 
 static void ICACHE_FLASH_ATTR resetTimerCb(void *arg) {
     sdk_system_upgrade_flag_set(UPGRADE_FLAG_FINISH);
-    rboot_set_config(&bootconf);
-    sdk_system_upgrade_reboot();
+    rboot_set_current_rom(bootconf.current_rom);
+    sdk_system_restart();
+    //rboot_set_config(&bootconf);
+    //sdk_system_upgrade_reboot();
 }
 
 // Handle request to reboot into the new firmware
