@@ -1,26 +1,37 @@
 <html>
-<head><title>Upgrade firmware</title>
-<link rel="stylesheet" type="text/css" href="style.css">
+<head>
+<meta charset="UTF-8">
+<title>Обновление прошивки</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
 <script type="text/javascript" src="../140medley.min.js"></script>
 <script type="text/javascript">
 
 var xhr=j();
 
 function doReboot() {
-	xhr.open("GET", "reboot");
-	xhr.onreadystatechange=function() {
-		if (xhr.readyState==4 && xhr.status>=200 && xhr.status<300) {
-			window.setTimeout(function() {
-				location.reload(true);
-			}, 3000);
-		}
-	}
-	//ToDo: set timer to 
-	xhr.send();
+    xhr.open("GET", "reboot");
+    xhr.onreadystatechange=function() {
+        console.log("onreadystate: " + xhr.readyState + " status=" +
+            xhr.status);
+        if (xhr.readyState==4 && xhr.status>=200 && xhr.status<=400) {
+            window.setTimeout(function() {
+                //location.reload(true);
+                console.log("reboot-timeout");
+                window.open("/", "_self");
+            }, 300);
+        }
+    }
+    //ToDo: set timer to 
+    xhr.send();
 }
 
 function setProgress(amt) {
-	$("#progressbarinner").style.width=String(amt*200)+"px";
+    if (amt === false) {
+        $("#progressbarcontainer").style.display = "none";
+    } else {
+        $("#progressbarcontainer").style.display = "block";
+        $("#progressbarinner").style.width=String(amt*200)+"px";
+    }
 }
 
 function doUpgrade() {
@@ -36,7 +47,7 @@ function doUpgrade() {
 			if (xhr.responseText!="") {
 				$("#remark").innerHTML="Error: "+xhr.responseText;
 			} else {
-				$("#remark").innerHTML="Uploading done. Rebooting.";
+				$("#remark").innerHTML="Готово. Перезагрузка...";
 				doReboot();
 			}
 		}
@@ -51,26 +62,16 @@ function doUpgrade() {
 }
 
 
-window.onload=function(e) {
-	xhr.open("GET", "next");
-	xhr.onreadystatechange=function() {
-		if (xhr.readyState==4 && xhr.status>=200 && xhr.status<300) {
-			var txt="Please upload "+xhr.responseText+" or ota file.";
-			$("#remark").innerHTML=txt;
-			setProgress(0);
-		}
-	}
-	xhr.send();
-}
-
 </script>
 </head>
 <body>
 <div id="main">
-<h1>Update firmware</h1>
-<div id="remark">Loading...</div>
+<h1>Обновление прошивки ESP8266</h1>
+<div id="remark">Залейте, пожалуйста, файл shadki.bin</div>
 <input type="file" id="file" />
-<input type="submit" value="Upgrade!" onclick="doUpgrade()" />
+<input type="submit" value="Стань кирпич!" onclick="doUpgrade()" />
+<div id="progressbarcontainer">
 <div id="progressbar"><div id="progressbarinner"></div></div>
+</div>
 </body>
 </html>

@@ -53,7 +53,7 @@ APPGEN		?= $(SDK_BASE)/tools/gen_appbin.py
 TARGET		= httpd
 
 # which modules (subdirectories) of the project to include in compiling
-MODULES		= spi user rboot/appcode spiffs spiffs/spiffs/src
+MODULES		= driver user rboot/appcode spiffs spiffs/spiffs/src
 EXTRA_INCDIR	= include user libesphttpd/include rboot rboot/appcode spiffs spiffs/spiffs/src .
 
 # libraries used in this project, mainly provided by the SDK (libmain2 with weakened Cache_Read_Enable_New)

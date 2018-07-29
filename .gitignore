@@ -1,4 +1,6 @@
 *.FCStd1
 *.kicad_pcb-bak
 *.bak
+*.swp
+.trash
 quartus/db/*

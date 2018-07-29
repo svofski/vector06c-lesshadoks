@@ -9,34 +9,17 @@
  */
 
 
-//#include <espressif/esp_common.h>
-////#include <c_types.h>
-//#include <etstimer.h>
-//#include <espressif/esp_system.h>
-//#include <espressif/esp_timer.h>
-//#include <espressif/esp_wifi.h>
-//#include <espressif/esp_sta.h>
-//#include <espressif/esp_misc.h>
-//#include <espressif/osapi.h>
-//
-//#include <espressif/esp8266/eagle_soc.h>
-//#include <espressif/esp8266/gpio_register.h>
-//#include <espressif/esp8266/pin_mux_register.h>
-
 #include <esp8266.h>
 
 #include "driver/gpio16.h"
-#include "esp/iomux.h"
-#include "esp/gpio.h"
+#include "driver/spi.h"
 
 #define LEDGPIO 2
 #define BTNGPIO 0
 #define CONF_DONEGPIO 5
 #define nCONFIGGPIO 16
 
-#ifndef ESP32
 static ETSTimer resetBtntimer;
-#endif
 
 ICACHE_FLASH_ATTR void ioLed(int ena) {
 	//gpio_output_set is overkill. ToDo: use better mactos
@@ -73,8 +56,6 @@ ICACHE_FLASH_ATTR void ioInit() {
 
         // nCONFIG on GPIO16 is input while not in use
         // gpio16 is a special snowflake
-        //gpio16_output_conf();
-        //gpio16_output_set(1);
         gpio16_input_conf();
 
 	os_timer_disarm(&resetBtntimer);
@@ -103,10 +84,11 @@ ICACHE_FLASH_ATTR void nconfig_set_input(int is_input)
 
 ICACHE_FLASH_ATTR void io_shutdown_spi()
 {
-    gpio_set_iomux_function(12, IOMUX_GPIO12_FUNC_GPIO);
-    gpio_set_iomux_function(13, IOMUX_GPIO13_FUNC_GPIO);
-    gpio_set_iomux_function(14, IOMUX_GPIO14_FUNC_GPIO);
-    gpio_disable(12);
-    gpio_disable(13);
-    gpio_disable(14);
+    spi_deinit(HSPI);
+//    gpio_set_iomux_function(12, IOMUX_GPIO12_FUNC_GPIO);
+//    gpio_set_iomux_function(13, IOMUX_GPIO13_FUNC_GPIO);
+//    gpio_set_iomux_function(14, IOMUX_GPIO14_FUNC_GPIO);
+//    gpio_disable(12);
+//    gpio_disable(13);
+//    gpio_disable(14);
 }

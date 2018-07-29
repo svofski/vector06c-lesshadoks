@@ -72,7 +72,6 @@ HttpdBuiltInUrl builtInUrls[]={
 void ICACHE_FLASH_ATTR wifiInit() {
     struct ip_info ap_ip;
     uint8_t wifi_get_opmode();
-    system_phy_set_max_tpw(0);
     switch(wifi_get_opmode()) {
         case STATIONAP_MODE:
         case SOFTAP_MODE:
@@ -142,7 +141,10 @@ ICACHE_FLASH_ATTR void user_init(void) {
     espFsInit((void*)(webpages_espfs_start));
     httpdInit(builtInUrls, 80);
 
-    wifi_set_sleep_type(MODEM_SLEEP_T);
+    //wifi_set_sleep_type(MODEM_SLEEP_T);
+    //wifi_set_sleep_type(LIGHT_SLEEP_T);
+    wifi_set_sleep_type(NONE_SLEEP_T);
+    system_phy_set_max_tpw(1);
 
     //sdk_system_deep_sleep(1000); -- what to do after deep sleep? 
 
