@@ -1,3 +1,6 @@
 [submodule "quartus/src/floppy/verilog-6502"]
 	path = quartus/src/floppy/verilog-6502
 	url = https://github.com/Arlet/verilog-6502
+[submodule "6502/cc65"]
+	path = 6502/cc65
+	url = https://github.com/svofski/cc65
