@@ -2,5 +2,10 @@
 *.kicad_pcb-bak
 *.bak
 *.swp
+*.pyc
 .trash
 quartus/db/*
+tags
+esp8266/cosmogol999/build/
+esp8266/cosmogol999/firmware/
+esp8266/cosmogol999/esptool2/

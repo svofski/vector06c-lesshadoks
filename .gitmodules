@@ -1,0 +1,3 @@
+[submodule "quartus/src/floppy/verilog-6502"]
+	path = quartus/src/floppy/verilog-6502
+	url = https://github.com/Arlet/verilog-6502

@@ -77,7 +77,10 @@ always @(*) begin
 	ST_WRITE0:   DRAM_ADDR = {4'b0100,addr[7:0]};			// A10=1 AUTO PRECHARGE ENABLE
 	endcase
 	case (state)
-	ST_RESET0:   {DRAM_RAS_N,DRAM_CAS_N,DRAM_WE_N} = 3'b000;	// CMD_LOAD_MODE_REGISTER
+        ST_RESET0:begin
+            {DRAM_RAS_N,DRAM_CAS_N,DRAM_WE_N} = 3'b000;	// CMD_LOAD_MODE_REGISTER
+            {DRAM_RAS_N,DRAM_CAS_N,DRAM_WE_N,DRAM_UDQM,DRAM_LDQM} = 5'b11111;
+            end
 	ST_RAS0:     {DRAM_RAS_N,DRAM_CAS_N,DRAM_WE_N} = 3'b011;	// CMD_ACTIVE
 	ST_READ0:    {DRAM_RAS_N,DRAM_CAS_N,DRAM_WE_N,DRAM_UDQM,DRAM_LDQM} = 5'b10100;	// CMD_READ
 	ST_WRITE0:   {DRAM_RAS_N,DRAM_CAS_N,DRAM_WE_N,DRAM_UDQM,DRAM_LDQM} = {3'b100,ub_n,lb_n}; // CMD_WRITE
@@ -98,6 +101,7 @@ always @(posedge clk) begin
 	if (reset) begin
 		membusy <= 1'b0;
 		refresh_sync <= 1'b0;
+                datar <= 0;
 	end 
 	else 	
 	begin
@@ -106,7 +110,8 @@ always @(posedge clk) begin
 		case(state) 
 		ST_IDLE:begin
 			membusy <= membusy_idle;
-			{addr[17:0],odata,ub_n,lb_n}<={iaddr[17:0],dataw,iub_n,ilb_n};
+			{addr[21:0],odata,ub_n,lb_n}<={iaddr[21:0],dataw,iub_n,ilb_n};
+                        {rd_r, we_n_r} <= {rd, we_n};
 			end
 		ST_READ2:
 			begin
@@ -121,16 +126,20 @@ always @(posedge clk) begin
 	end
 end
 
+reg rd_r, we_n_r;
+
 always @(posedge clk) begin
-	if (reset)
+        if (reset) begin
 		state <= ST_RESET0; 
+                {rd_r, we_n_r} = 2'b01;
+        end
 	else 
 	case (state)
 	ST_RESET0: state <= ST_RESET1;
 	ST_RESET1: state <= ST_IDLE;
 	ST_IDLE: state <= (rd | ~we_n) ? ST_RAS0 : refresh_cond ? ST_REFRESH0 : ST_IDLE;
 	ST_RAS0: state <= ST_RAS1;
-	ST_RAS1:casex ({rd,~we_n})
+	ST_RAS1:casex ({rd_r,~we_n_r})
 		2'b10: state <= ST_READ0; 
 		2'b01: state <= ST_WRITE0;
 		default: state <= ST_IDLE;
