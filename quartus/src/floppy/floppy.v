@@ -181,7 +181,8 @@ assign display_wren = osd_en & memwr;
 
 wire [14:0] ram_adrs = cpu_a-16'h0800;
 ram 
-    #(.ADDR_WIDTH(15),.DEPTH(18432),.HEXFILE("../../firmware/floppy/disk.hax")) 
+    #(.ADDR_WIDTH(15),.DEPTH(18432),
+        .HEXFILE("../../../firmware/6502/disk.hax")) 
     flopramnik(
     .clk(clk),
     .cs(ce & rammem_en),

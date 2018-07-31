@@ -3,6 +3,9 @@
 *.bak
 *.swp
 *.pyc
+*.vvp
+*.vcd
+*.o
 .trash
 quartus/db/*
 tags

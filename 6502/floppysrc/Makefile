@@ -2,7 +2,7 @@ C65=../cc65/bin/cc65
 A65=../cc65/bin/ca65
 L65=../cc65/bin/ld65
 
-DSTDIR=../firmware/6502
+DSTDIR=../../firmware/6502
 
 #CINC=c:\usr\lib\cc65\include
 #AINC=c:\usr\lib\cc65\asminc

@@ -94,7 +94,7 @@ sdram_arbitre arbitre0(
     .access_slot(access_slot),
 
     .vu_adrs(18'h0),
-    .vu_data(8'h0),
+    .vu_data_i(8'h0),
     .vu_write(1'b0),
     .vu_read(1'b0),
 
