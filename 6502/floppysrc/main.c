@@ -81,7 +81,9 @@ void main(void) {
     FRESULT fresult;
     int i;
 
-    *sdram_byte = 0x1b;
+    for (i = 0; i < 16; ++i) {
+        sdram_byte[i] = i;
+    }
     for (i = 0; i < 16; ++i) {
         print_hex(sdram_byte[i]);
         ser_puts(" ");
