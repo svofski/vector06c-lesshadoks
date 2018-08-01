@@ -828,7 +828,7 @@ Text Label 8600 4750 2    47   ~ 0
 ~STATUS
 Text Label 1400 2650 2    47   ~ 0
 ~STATUS
-Text Label 1400 3150 2    47   ~ 0
+Text Label 1150 3150 0    47   ~ 0
 ~CONFIG
 Text Label 8600 4550 2    47   ~ 0
 ~CONFIG
@@ -3450,6 +3450,8 @@ Wire Notes Line
 	7000 1000 6900 1000
 Wire Notes Line
 	6900 1000 6900 800 
+Wire Wire Line
+	1150 3150 1400 3150
 Wire Bus Line
 	1100 550  1100 1950
 Wire Bus Line
