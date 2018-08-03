@@ -79,7 +79,7 @@ always @(*) begin
 	case (state)
         ST_RESET0:begin
             {DRAM_RAS_N,DRAM_CAS_N,DRAM_WE_N} = 3'b000;	// CMD_LOAD_MODE_REGISTER
-            {DRAM_RAS_N,DRAM_CAS_N,DRAM_WE_N,DRAM_UDQM,DRAM_LDQM} = 5'b11111;
+            //{DRAM_RAS_N,DRAM_CAS_N,DRAM_WE_N,DRAM_UDQM,DRAM_LDQM} = 5'b11111;
             end
 	ST_RAS0:     {DRAM_RAS_N,DRAM_CAS_N,DRAM_WE_N} = 3'b011;	// CMD_ACTIVE
 	ST_READ0:    {DRAM_RAS_N,DRAM_CAS_N,DRAM_WE_N,DRAM_UDQM,DRAM_LDQM} = 5'b10100;	// CMD_READ
@@ -102,6 +102,7 @@ always @(posedge clk) begin
 		membusy <= 1'b0;
 		refresh_sync <= 1'b0;
                 datar <= 0;
+                {rd_r, we_n_r} = 2'b01;		
 	end 
 	else 	
 	begin
@@ -131,7 +132,6 @@ reg rd_r, we_n_r;
 always @(posedge clk) begin
         if (reset) begin
 		state <= ST_RESET0; 
-                {rd_r, we_n_r} = 2'b01;
         end
 	else 
 	case (state)

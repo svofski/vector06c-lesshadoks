@@ -1,1 +1,0 @@
-Milkymist UART by Sebastien Bourdeauducq, pulled from https://github.com/freecores/mmuart

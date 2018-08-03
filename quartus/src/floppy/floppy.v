@@ -23,10 +23,10 @@ module floppy(
     input               clk,
     input               ce,
     input               reset_n,
-    output      [15:0]  addr,
-    input       [7:0]   idata,
-    output      [7:0]   odata,
-    output              memwr,
+//    output      [15:0]  addr,
+//    input       [7:0]   idata,
+//    output      [7:0]   odata,
+//    output              memwr,
     input               sd_dat,     // sd card signals
     output  reg         sd_dat3,    // sd card signals
     output              sd_cmd,     // sd card signals
@@ -95,8 +95,8 @@ parameter PORT_OSD_COMMAND = 17;        // {F11,F12,HOLD}
 
 parameter PORT_SDRAM_PAGE = 18;
 
-assign addr = cpu_a;
-assign odata = cpu_do;
+//assign addr = cpu_a;
+//assign odata = cpu_do;
 assign red_leds = {spi_wren,dma_debug[6:0]};
 assign debug = wdport_status;
 assign debugidata = {ce & bufmem_en, ce, hostio_rd, wd_ram_rd};
@@ -106,7 +106,7 @@ wire            memwrx;
 wire    [7:0]   cpu_dox;
 
 wire    [15:0]  cpu_a = dma_ready ? cpu_ax  : dma_oaddr;
-assign          memwr = dma_ready ? memwrx  : dma_memwr;
+wire		memwr = dma_ready ? memwrx  : dma_memwr;
 wire    [7:0]   cpu_do = dma_ready ? cpu_dox: dma_odata;
 reg     [7:0]   cpu_di;
 
@@ -182,7 +182,7 @@ assign display_wren = osd_en & memwr;
 wire [14:0] ram_adrs = cpu_a-16'h0800;
 ram 
     #(.ADDR_WIDTH(15),.DEPTH(18432),
-        .HEXFILE("../../../firmware/6502/disk.hax")) 
+        .HEXFILE("../firmware/6502/disk.hax")) 
     flopramnik(
     .clk(clk),
     .cs(ce & rammem_en),

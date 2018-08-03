@@ -199,12 +199,19 @@ set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to AUDIO_L
 set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to AUDIO_R
 set_location_assignment PIN_23 -to VU_RESET
 set_instance_assignment -name PCI_IO ON -to VU_RESET
+set_global_assignment -name VERILOG_FILE src/uart.v
+set_global_assignment -name VERILOG_FILE src/ram.v
+set_global_assignment -name VERILOG_FILE "src/floppy/verilog-6502/cpu.v"
+set_global_assignment -name VERILOG_FILE "src/floppy/verilog-6502/ALU.v"
+set_global_assignment -name VERILOG_FILE src/floppy/wd1793.v
+set_global_assignment -name VERILOG_FILE src/floppy/timer100hz.v
+set_global_assignment -name VERILOG_FILE src/floppy/spi.v
+set_global_assignment -name VERILOG_FILE src/floppy/floppy.v
+set_global_assignment -name VERILOG_FILE src/floppy/dma_rw.v
 set_global_assignment -name VERILOG_FILE src/lesshadoks_top.v
 set_global_assignment -name VERILOG_FILE src/sdram_arbitre.v
 set_global_assignment -name VERILOG_FILE src/kvaz.v
 set_global_assignment -name VERILOG_FILE src/vu_bus.v
-set_global_assignment -name VERILOG_FILE src/mmuart/rtl/uart_transceiver.v
-set_global_assignment -name VERILOG_FILE src/mmuart/rtl/uart.v
 set_global_assignment -name VERILOG_FILE src/sdram/SDRAM_Controller.v
 set_global_assignment -name VERILOG_FILE src/soundinterfaces.v
 set_global_assignment -name VERILOG_FILE src/soundcodec.v

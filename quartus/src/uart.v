@@ -22,8 +22,6 @@ module uart_interface #(parameter
     output              tx_busy
 );
 
-wire tx_busy;
-
 reg tx_start = 1'b0;
 reg [7:0] tx_byte;
 wire [7:0] rx_byte;

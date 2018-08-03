@@ -68,7 +68,7 @@ module lesshadoks_top(
 	
 
 // Debug wires
-assign virt_kvaz_control_word = {sdram_pls, 1'b0, kvaz_memwr ^ kvaz_memrd};
+assign virt_kvaz_control_word = {ramc_refresh, 1'b0, kvaz_memwr ^ kvaz_memrd};
 
 wire sys_reset;
 reset_debouncer reset_debouncer(.clk(clk_cpu), .butt_n(BUTT1), 
@@ -127,9 +127,19 @@ wire 		ramdisk_control_write = (shavv_r == 8'h10) && negedge_zpvv_n;
 wire [7:0]  	kvaz_debug;
 wire 		kvaz_memwr = (~VU_BLK_N) & negedge_zpzu_n;
 
-wire 		kvaz_do_e = ~(VU_BLK_N | (cchtzu_n & cchtvv_n));
-assign 		VU_SHD = kvaz_do_e ? kvaz_do : 8'bzzzzzzzz;
-assign 		VU_DIR_N = ~kvaz_do_e;
+//wire 		kvaz_do_e = ~(VU_BLK_N | (cchtzu_n & cchtvv_n));
+//assign 		VU_SHD = kvaz_do_e ? kvaz_do : 8'bzzzzzzzz;
+//assign 		VU_DIR_N = ~kvaz_do_e;
+
+wire [7:0]	iodev_do = fdc_sel ? fdc_do :
+			   sound_sel ? sound_do : 8'hff;
+
+wire		iodev_do_e = ~(VU_BLK_N | cchtvv_n);
+wire		kvaz_do_e = ~(VU_BLK_N | cchtzu_n);
+wire 		vu_shd_oe = iodev_do_e | kvaz_do_e;
+assign 		VU_DIR_N = ~vu_shd_oe;
+assign 		VU_SHD = kvaz_do_e ? kvaz_do :
+			iodev_do_e ? iodev_do : 8'bzzzzzzzz;
 
 // ЧТЗУ может вылезти до завершения полного цикла RAS/CAS, 
 // поэтому для него специальный ритуал синхронизации
@@ -186,16 +196,23 @@ kvaz ramdisk(
 );
 
 wire [17:0] kvaz_addr = {kvaz_page, decoded_a};		
-wire [7:0] kvaz_do = sdram_lb ? sdram_do[7:0] : sdram_do[15:8];
+wire [7:0] kvaz_do = ramc_lb ? ramc_data_from[7:0] : ramc_data_from[15:8];
 	
 wire ce_cpu = 1'b1;	
-
-`ifdef SDRAM_TRU
 
 assign DRAM_CLK=clk_sdram;              //  SDRAM Clock
 assign DRAM_CKE=1;                      //  SDRAM Clock Enable
 
-SDRAM_Controller ramd(
+wire [22:0] ramc_addr;
+wire [15:0] ramc_data_to;
+wire [15:0] ramc_data_from;
+wire        ramc_read;
+wire        ramc_write;
+wire        ramc_lb, ramc_ub;
+wire        ramc_refresh;
+wire        ramc_busy;
+
+SDRAM_Controller ramc(
     .clk(clk_sdram),                    //  SDRAM clock
     .reset(sys_reset),                  //  System reset
     .DRAM_DQ(DRAM_DQ),                  //  SDRAM Data bus 16 Bits
@@ -209,91 +226,106 @@ SDRAM_Controller ramd(
     .DRAM_BA_0(DRAM_BA_0),              //  SDRAM Bank Address 0
     .DRAM_BA_1(DRAM_BA_1),              //  SDRAM Bank Address 1
     
-    .iaddr(sdram_addr),			// address from cpu [21:0]
-    .dataw(data_to_sdram),		// data from cpu [15:0]
-    .rd(sdram_read),			// read request
-    .we_n(~sdram_write), 		// write request neg
-    .ilb_n(~sdram_lb),			// lower byte mask
-    .iub_n(~sdram_ub),			// upper byte mask
-    .datar(sdram_dq),			// data from sdram [15:0]
-    .membusy(sdram_busy)		// sdram busy flag
-   ,.refresh(sdram_pls)
+    .iaddr(ramc_addr),			// address from cpu [21:0]
+    .dataw(ramc_data_to),		// data from cpu [15:0]
+    .datar(ramc_data_from),		// data from sdram [15:0]
+    .ilb_n(~ramc_lb),			// lower byte mask
+    .iub_n(~ramc_ub),			// upper byte mask
+    .rd(ramc_read),			// read request
+    .we_n(~ramc_write), 		// write request neg
+    .membusy(ramc_busy),		// sdram busy flag
+    .refresh(ramc_refresh)
 );
 
-
-`else
-
-assign DRAM_CLK=0;              //  SDRAM Clock
-assign DRAM_CKE=0;              //  SDRAM Clock Enable
-
-
-testram dummyram(
-	.address(sdram_addr - 'h5000),
-	.clock(clk_cpu),
-	.byteena({sdram_ub,sdram_lb}),
-	.data(data_to_sdram),
-	.wren(sdram_write),
-	.q(sdram_do));
-assign sdram_busy = 1'b0;
-
-`endif
 		
-wire [7:0] sound_data_o;
+wire sound_sel; // todo -- route selector from soundinterfaces
+wire [7:0] sound_do;
 soundinterfaces soundinterfaces(.clk(clk_cpu), .reset(sys_reset),
-	.shavv(shavv_r), .data(VU_SHD), .data_o(sound_data_o), 
+	.shavv(shavv_r), .data(VU_SHD), .data_o(sound_do), 
 	.negedge_zpvv_n(negedge_zpvv_n), .negedge_chtvv_n(negedge_chtvv_n),
 	.audio_l(AUDIO_L), .audio_r(AUDIO_R));
 
-
-//wire [31:0] 	sdram32_do;
-//wire [31:0] 	sdram32_di;
-//wire [15:0] 	zpu_mem_addr;
-//wire 		zpu_mem_wren;
-//wire 		zpu_mem_rden;
-//wire [3:0] 	zpu_writemask;	
-//wire 		zpu_break;	
-//zpu_core_flex zpushnik(.clk(clk_cpu), .reset(sys_reset),
-//	.enable(1),
-//	.in_mem_busy(sdram_busy),
-//	.mem_read(sdram32_do),
-//	.mem_write(sdram32_di),
-//	.out_mem_addr(zpu_mem_addr),
-//	.out_mem_writeEnable(zpu_mem_wren),
-//	.out_mem_readEnable(zpu_mem_rden),
-//	.mem_writeMask(zpu_writemask),
-//	.interrupt(0),
-//	.break(zpu_break)
-//      );	
-	
-wire [15:0] data_to_sdram;
-wire sdram_lb, sdram_ub;
-wire sdram_read, sdram_write;
-wire [21:0] sdram_addr;			// SDRAM addr, 4M words
-wire [15:0] sdram_dq;			// raw from sdram controller
-wire [31:0] sdram_do;			// ready for consumption, including 32-bit
-wire sdram_busy;
-wire sdram_pls;
-
 // когда вообще не страшно лезть в SDRAM
 wire sdram_free_access_slot = posedge_ras_n & ccas_n & VU_BLK_N;
+	
+/////////
+sdram_arbitre arbitre0(
+    .clk(clk_cpu), .reset(sys_reset),
 
-sdram_arbiter bus_arbiter(.clk(clk_cpu), .reset(sys_reset),
-	.vu_adrs(kvaz_addr),
-	.vu_data(VU_SHD),
-	.vu_write(kvaz_write),
-	.vu_read(kvaz_read),
-	.access_slot(sdram_free_access_slot),
+    .access_slot(sdram_free_access_slot),
+
+    .vu_adrs(kvaz_addr),
+    .vu_data_i(VU_SHD),
+    .vu_write(kvaz_write),
+    .vu_read(kvaz_read),
+
+    .disk_adrs(floppy_sdram_addr),
+    .disk_data_i(floppy_sdram_do),
+    .disk_data_o(floppy_sdram_di),
+    .disk_write(floppy_sdram_write),
+    .disk_read(floppy_sdram_read),
+    .disk_halfword(1'b0),
+    .disk_byte(1'b1),
+    .disk_ram_busy(floppy_sdram_busy),
+
+    .sdram_addr(ramc_addr),
+    .sdram_di(ramc_data_from),
+    .sdram_do(ramc_data_to),
+    .sdram_read(ramc_read),
+    .sdram_write(ramc_write),
+    .sdram_lb(ramc_lb),
+    .sdram_ub(ramc_ub),
+    .sdram_refresh(ramc_refresh),
+
+    .sdram_busy(ramc_busy));
 	
-	.sdram_addr(sdram_addr),
-	.data_to_sdram(data_to_sdram),
-	.sdram_read(sdram_read),
-	.sdram_write(sdram_write),
-	.sdram_lb(sdram_lb), .sdram_ub(sdram_ub),
-	.sdram_refresh(sdram_pls),
-	.sdram_dq(sdram_dq),
+
+wire [22:0] floppy_sdram_addr;
+wire [7:0]  floppy_sdram_do;
+wire [7:0]  floppy_sdram_di;
+wire        floppy_sdram_read;
+wire        floppy_sdram_write;
+wire        floppy_sdram_busy;
+
+wire    [5:0]   keyboard_keys = 0;
+
+// ports 18..1b, 1c
+wire		fdc_sel = shavv_r[7:3] == 5'b00011; // crude, low trib should be 000,001,010,011,100 not 101,110,111
+wire 		fdc_wr = fdc_sel & negedge_zpvv_n;
+wire		fdc_rd = fdc_sel & negedge_chtvv_n;
+wire	[3:0]	fdc_adrs = {shavv_r[2],~shavv_r[1:0]};
+wire	[7:0]	fdc_do;
+
+floppy floppy0(
+    .clk(clk_cpu),
+    .ce(1'b1),
+    .reset_n(~sys_reset),
+
+    .sd_dat(SPI_MISO),      // sd card signals
+    .sd_dat3(SD_SS_N),      // sd card signals
+    .sd_cmd(SPI_MOSI),      // sd card signals
+    .sd_clk(SPI_CLK),       // sd card signals
+    .uart_txd(ESP_TXD),     // uart tx pin
+    
+    // I/O interface to host system (Vector-06C)
+    .hostio_addr(fdc_adrs),
+    .hostio_idata(VU_SHD),
+    .hostio_odata(fdc_do),
+    .hostio_rd(fdc_rd),
+    .hostio_wr(fdc_wr),
+
+//    // path to SDRAM
+//    .sdram_addr(floppy_sdram_addr),
+//    .sdram_data_o(floppy_sdram_do),
+//    .sdram_data_i(floppy_sdram_di),
+//    .sdram_read(floppy_sdram_read),
+//    .sdram_write(floppy_sdram_write),
+//    .sdram_busy(floppy_sdram_busy),
+    
+    // keyboard interface
+    .keyboard_keys(keyboard_keys)// {reserved,left,right,up,down,enter}
+);
 	
-	.q(sdram_do),
-	);
 	
 	
 endmodule

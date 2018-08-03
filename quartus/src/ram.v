@@ -19,7 +19,9 @@ reg [DATA_WIDTH-1:0] memory_array [0:DEPTH-1];
 integer i;
 
 initial begin
+`ifdef SIMULATION
     for (i = 0; i < DEPTH; i = i + 1) memory_array[i] = 0;
+`endif    
     if (HEXFILE != "") begin
         $readmemh(HEXFILE, memory_array);
         //for (i = 0; i < 256; i = i + 1) begin
