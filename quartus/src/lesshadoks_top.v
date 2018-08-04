@@ -68,7 +68,7 @@ module lesshadoks_top(
 	
 
 // Debug wires
-assign virt_kvaz_control_word = {ramc_refresh, 1'b0, kvaz_memwr ^ kvaz_memrd};
+assign virt_kvaz_control_word = {iodev_blk_n, cchtvv_n, iodev_do_e, fdc_sel};
 
 wire sys_reset;
 reset_debouncer reset_debouncer(.clk(clk_cpu), .butt_n(BUTT1), 
@@ -134,9 +134,14 @@ wire 		kvaz_memwr = (~VU_BLK_N) & negedge_zpzu_n;
 wire [7:0]	iodev_do = fdc_sel ? fdc_do :
 			   sound_sel ? sound_do : 8'hff;
 
-wire		iodev_do_e = ~(VU_BLK_N | cchtvv_n);
-wire		kvaz_do_e = ~(VU_BLK_N | cchtzu_n);
+wire		iodev_do_e = ~(iodev_blk_n | cchtvv_n);
+wire		kvaz_do_e = ~(kvaz_blk_n | cchtzu_n);
 wire 		vu_shd_oe = iodev_do_e | kvaz_do_e;
+wire		kvaz_blk_n;
+
+wire		iodev_blk_n = ~(fdc_sel & ~cchtvv_n);
+
+assign 		VU_BLK_N = kvaz_blk_n & iodev_blk_n;
 assign 		VU_DIR_N = ~vu_shd_oe;
 assign 		VU_SHD = kvaz_do_e ? kvaz_do :
 			iodev_do_e ? iodev_do : 8'bzzzzzzzz;
@@ -191,7 +196,7 @@ kvaz ramdisk(
     .memwr(kvaz_memwr), 		// todo: not used in kvaz module
     .memrd(kvaz_memrd), 		// todo: not used in kvaz module
     .bigram_addr(kvaz_page),
-    .blk_n(VU_BLK_N),
+    .blk_n(kvaz_blk_n),
     .debug(kvaz_debug)
 );
 
@@ -296,10 +301,11 @@ wire		fdc_rd = fdc_sel & negedge_chtvv_n;
 wire	[3:0]	fdc_adrs = {shavv_r[2],~shavv_r[1:0]};
 wire	[7:0]	fdc_do;
 
+
 floppy floppy0(
     .clk(clk_cpu),
     .ce(1'b1),
-    .reset_n(~sys_reset),
+    .reset_n(1),//~sys_reset),
 
     .sd_dat(SPI_MISO),      // sd card signals
     .sd_dat3(SD_SS_N),      // sd card signals

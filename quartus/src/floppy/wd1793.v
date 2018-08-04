@@ -64,7 +64,7 @@ assign  buff_odata = wdstat_datareg;
 assign  oTRACK = disk_track;
 assign  oSECTOR = wdstat_sector;
 assign  oSTATUS = wdstat_status;
-assign  wtf = state == STATE_DEAD;
+assign  wtf = (addr==3) & rd;//state == STATE_DEAD;
 assign  irq = s_busy;
 assign  drq = s_drq;
 
@@ -106,6 +106,12 @@ parameter STATE_DEAD        = 15;   /* Total cessation, for debugging */
 parameter SECTOR_SIZE       = 11'd1024;
 parameter SECTORS_PER_TRACK = 8'd5;
 
+reg [4:0] wr_ctr;
+always @(posedge clk)
+	if (~reset_n)
+		wr_ctr <= 0;
+	else if (wr)
+		wr_ctr <= wr_ctr + 1;
 
 
 // State variables
@@ -589,7 +595,8 @@ endmodule
 
 // start ticking when cock goes down
 module watchdog(clk, clken, cock, q);
-parameter TIME = 16'd2048; // 2048 seems to work better than expected 100 (32us).. why?
+// 2048 (680us) seems to work better than expected 100 (32us).. why?
+parameter TIME = 16'd2048 * 8; // times 8 for 24mhz SoC
 input clk, clken;
 input cock;
 output q;
