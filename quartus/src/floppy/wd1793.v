@@ -58,17 +58,24 @@ module wd1793(
     
     output              irq,
     output              drq,
-    output              wtf); 
+    output              wtf,
+    output	[3:0]	debug); 
 
 assign  buff_odata = wdstat_datareg;
 assign  oTRACK = disk_track;
 assign  oSECTOR = wdstat_sector;
 assign  oSTATUS = wdstat_status;
-assign  wtf = (addr==3) & rd;//state == STATE_DEAD;
+
+assign debug = 
+	{2'b00, s_busy, (boo == 1) & (state == STATE_ENDCOMMAND)/* wr & (addr == A_SECTOR) & (idata == 2) */};
+
+//assign  wtf = (boo == 1) & (state == STATE_ENDCOMMAND);//drq;//(addr==3) & rd;//state == STATE_DEAD;
+assign  wtf = state == STATE_DEAD;
 assign  irq = s_busy;
 assign  drq = s_drq;
 
 // Workhorse CPU request codes
+parameter CPU_REQUEST_NONE	= 8'h00;
 parameter CPU_REQUEST_READ      = 8'h10;
 parameter CPU_REQUEST_WRITE     = 8'h20;
 parameter CPU_REQUEST_READADDR  = 8'h30;
@@ -145,7 +152,7 @@ wire        s_drq = s_drq_busy[1];
 wire        s_busy = s_drq_busy[0];
 
 // Timer for keeping DRQ pace
-reg [3:0]   read_timer;
+reg [7:0]   read_timer;
 
 always @(disk_track) begin: _track0
     s_track0 <= disk_track == 0;
@@ -209,7 +216,7 @@ always @(posedge clk or negedge reset_n) begin: _wdmain
         s_drq_busy <= 2'b11;
         s_seekerr <= 1;
         s_wrfault <= 1;
-        s_readonly <= 1;
+        //s_readonly <= 1;
         s_crcerr <= 1;
         oCPU_REQUEST <= CPU_REQUEST_FAIL;
     end else if (clken) begin
@@ -409,7 +416,7 @@ always @(posedge clk or negedge reset_n) begin: _wdmain
         STATE_READ_2:
             begin
                 watchdog_set <= 1;
-                read_timer <= 4'b1111;
+                read_timer <= 8'b1111000; // times 8
                 state <= STATE_READ_3;
                 s_drq_busy <= 2'b01;
                 buff_rd <= 1;
@@ -583,7 +590,7 @@ always @(posedge clk or negedge reset_n) begin: _wdmain
         STATE_ENDCOMMAND2:
             begin
                 if (iCPU_STATUS == 0) begin
-                    oCPU_REQUEST <= 0;
+                    oCPU_REQUEST <= CPU_REQUEST_NONE;
                     state <= STATE_READY;
                     s_drq_busy <= 2'b00;
                 end
@@ -597,6 +604,7 @@ endmodule
 module watchdog(clk, clken, cock, q);
 // 2048 (680us) seems to work better than expected 100 (32us).. why?
 parameter TIME = 16'd2048 * 8; // times 8 for 24mhz SoC
+//parameter TIME = 16'd2048; // times 8 for 24mhz SoC
 input clk, clken;
 input cock;
 output q;

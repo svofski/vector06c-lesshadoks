@@ -68,7 +68,12 @@ module lesshadoks_top(
 	
 
 // Debug wires
-assign virt_kvaz_control_word = {iodev_blk_n, cchtvv_n, iodev_do_e, fdc_sel};
+
+reg [7:0] strobdelay;
+always @(posedge clk_cpu)
+	strobdelay <= {strobdelay[6:0], VU_STROB_SOST};
+	
+assign virt_kvaz_control_word = {strobdelay[7] & kvaz_read, kvaz_read_fast, decoded_a_valid, kvaz_memrd_flag};//vg93debug;
 
 wire sys_reset;
 reset_debouncer reset_debouncer(.clk(clk_cpu), .butt_n(BUTT1), 
@@ -152,9 +157,27 @@ assign 		VU_SHD = kvaz_do_e ? kvaz_do :
 // после получения валидного decoded_a
 parameter KVAZ_MEMRD_S0 = 0, KVAZ_MEMRD_S1 = 1, KVAZ_MEMRD_S2 = 2, KVAZ_MEMRD_S3 = 3;
 reg [2:0] kvaz_memrd_state;
-wire	  kvaz_memrd_flag = (~VU_BLK_N) & negedge_chtzu_n;
+
+reg 	  memrd_psw;
+always @(posedge clk_cpu or posedge sys_reset)
+	if (sys_reset)
+		memrd_psw <= 1'b0;
+	else if (posedge_strob_sost)
+		memrd_psw <= VU_SHD[7];
+	else if (kvaz_memrd_state == KVAZ_MEMRD_S3)
+		memrd_psw <= 1'b0;
+	
+
+wire	  kvaz_memrd_flag = (~kvaz_blk_n) & memrd_psw; //negedge_chtzu_n;
 reg	  kvaz_write;
+
+
 reg 	  kvaz_read;
+// this ok: 
+wire      kvaz_read_fast = kvaz_read;// | (kvaz_memrd_flag & decoded_a_valid) | ((kvaz_memrd_state == KVAZ_MEMRD_S1) & decoded_a_valid);
+// this not: wire      kvaz_read_fast = kvaz_read | ((kvaz_memrd_state == KVAZ_MEMRD_S1) & decoded_a_valid);
+//wire      kvaz_read_fast = kvaz_read | (kvaz_memrd_flag & decoded_a_valid);
+
 always @(posedge clk_cpu or posedge sys_reset) begin: _kvaz_memrd_sync
 	if (sys_reset) begin
 		kvaz_memrd_state <= KVAZ_MEMRD_S0;
@@ -183,12 +206,13 @@ shap_decoder address_decoder(.clk(clk_cpu), .reset(sys_reset),
 	.clean_ras_n(cras_n), .clean_cas_n(ccas_n), .VU_SHAP_N(VU_SHAP_N),
 	.decoded_a(decoded_a), .valid(decoded_a_valid));
 
+	
 
 kvaz ramdisk(
     .clk(clk_cpu),
     .clke(ce_cpu), 
     .reset(sys_reset),
-    .shavv(~VU_SHAVV_N),
+    .shavv(shavv_r),
     .address(decoded_a),
     .select(ramdisk_control_write),
     .data_in(VU_SHD),
@@ -262,7 +286,7 @@ sdram_arbitre arbitre0(
     .vu_adrs(kvaz_addr),
     .vu_data_i(VU_SHD),
     .vu_write(kvaz_write),
-    .vu_read(kvaz_read),
+    .vu_read(kvaz_read_fast),
 
     .disk_adrs(floppy_sdram_addr),
     .disk_data_i(floppy_sdram_do),
@@ -302,6 +326,14 @@ wire	[3:0]	fdc_adrs = {shavv_r[2],~shavv_r[1:0]};
 wire	[7:0]	fdc_do;
 
 
+//reg [2:0] div;
+//always @(posedge clk_cpu)
+//	div <= div + 1'b1;
+//
+//wire clken3 = div == 0;
+
+wire [3:0] vg93debug;
+
 floppy floppy0(
     .clk(clk_cpu),
     .ce(1'b1),
@@ -330,6 +362,7 @@ floppy floppy0(
     
     // keyboard interface
     .keyboard_keys(keyboard_keys)// {reserved,left,right,up,down,enter}
+    ,.vg93debug(vg93debug)
 );
 	
 	

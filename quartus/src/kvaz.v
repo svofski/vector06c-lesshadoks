@@ -39,7 +39,7 @@ module kvaz(
 
 // control register
 reg [7:0]		control_reg;
-assign debug = {control_reg};
+assign debug = {stack_sel, ram_sel};
 
 always @(posedge clk) begin
 	if (reset) begin
@@ -67,7 +67,7 @@ wire stack_sel = cr_stack_on & stack;
 
 assign blk_n = ~((cr_ram_on & addr_sel) | (cr_stack_on & stack));
 
-always @(stack,memrd,memwr,stack_sel,cr_stack_page,ram_sel,cr_ram_page) begin
+always @* begin
 	bigram_addr <= stack_sel ? cr_stack_page : ram_sel ? cr_ram_page : 3'b000;
 end	
 

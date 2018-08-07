@@ -63,7 +63,9 @@ module floppy(
     output      [7:0]   red_leds,
     output      [7:0]   debug,
     output      [7:0]   debugidata,
-    output              host_hold
+    output              host_hold,
+    
+    output      [3:0]   vg93debug
 );
 
     
@@ -111,8 +113,9 @@ wire    [7:0]   cpu_do = dma_ready ? cpu_dox: dma_odata;
 reg     [7:0]   cpu_di;
 
 //// Workhorse 6502 CPU
-wire cpu_ce = ce & ~(wd_ram_rd|wd_ram_wr|~dma_ready|~sdram_ready);
+wire ready = /*ce & */ ~(wd_ram_rd|wd_ram_wr|~dma_ready|~sdram_ready);
 cpu cpu(.clk(clk),
+    .clken(ce),
     .reset(~reset_n),
     .AB(cpu_ax),
     .DI(cpu_di),
@@ -120,7 +123,9 @@ cpu cpu(.clk(clk),
     .WE(memwrx),
     .IRQ(1'b0),
     .NMI(1'b0),
-    .RDY(cpu_ce));
+    .RDY(ready));
+    //,
+    //.RDY(cpu_ce));
 
 //always @(cpu_ax) $display("cpu_ax=%04x", cpu_ax);
 
@@ -137,7 +142,7 @@ always @(posedge clk)
 
 reg [6:0] di_select;
 always @(posedge clk)
-    if (cpu_ce)
+    if (ce)
         di_select = {&cpu_a[15:4], lowmem_en, bufmem_en, rammem_en, osd_en, 
                     sdram_en};
 
@@ -423,7 +428,6 @@ wire        wd_ram_rd;
 wire        wd_ram_wr;  
 wire [7:0]  wd_ram_odata;   // this is to write to ram
 
-
 wd1793 vg93(
     .clk(clk), 
     .clken(ce), 
@@ -450,7 +454,8 @@ wd1793 vg93(
     .oCPU_REQUEST(wdport_cpu_request),
     .iCPU_STATUS(wdport_cpu_status),
 
-    .wtf(host_hold));
+    .wtf(host_hold),
+    .debug(vg93debug));
 
 // A window into SDRAM world: 32kb, msb selected by sdram_page
 // pages 0..7 map to kvaz

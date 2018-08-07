@@ -179,16 +179,46 @@ end
 
 reg valid_delay;
 
+`define DELAY2 
+
+`ifdef DELAY3
+// 3 такта от negedge cas до kvaz_read
+// с такой задержкой может, но только чуть чуть
+// (mdos20 начинает работать, Но тут же куксится)
+// 
+always @* valid <= valid_delay;
+
 always @(negedge clk) begin
 	valid_delay <= negedge_cas_n ? 1'b1 : 
 		(clean_cas_n & clean_ras_n) ? 1'b0 : valid_delay;
-	valid <= valid_delay;
+
+	// с такой задеркжой код совсем не может исполняться из кваза
+	//valid <= valid_delay;
 	
 	if (negedge_ras_n)
 		ra <= ra_z3;
 	if (negedge_cas_n)
 		ca <= ra_z4;
 end
+`endif
+
+`ifdef DELAY2
+always @* valid <= valid_delay | negedge_cas_n;
+
+always @(negedge clk) begin
+	valid_delay <= negedge_cas_n ? 1'b1 : 
+		(clean_cas_n & clean_ras_n) ? 1'b0 : valid_delay;
+
+	// с такой задеркжой код совсем не может исполняться из кваза
+	//valid <= valid_delay;
+	
+	if (negedge_ras_n)
+		ra <= ra_z3;
+	if (negedge_cas_n)
+		ca <= ra_z4;
+end
+`endif
+
 
 always decoded_a <= {ca[6], ~ca[7], ~ra[7], ra[4], ra[3], ra[2], ra[1],ra[0],
 		     ca[5],  ca[4],  ca[3], ca[2], ca[1], ca[0], ra[6],ra[5]};		
