@@ -23,10 +23,6 @@ module floppy(
     input               clk,
     input               ce,
     input               reset_n,
-//    output      [15:0]  addr,
-//    input       [7:0]   idata,
-//    output      [7:0]   odata,
-//    output              memwr,
     input               sd_dat,     // sd card signals
     output  reg         sd_dat3,    // sd card signals
     output              sd_cmd,     // sd card signals
@@ -124,8 +120,6 @@ cpu cpu(.clk(clk),
     .IRQ(1'b0),
     .NMI(1'b0),
     .RDY(ready));
-    //,
-    //.RDY(cpu_ce));
 
 //always @(cpu_ax) $display("cpu_ax=%04x", cpu_ax);
 
@@ -140,7 +134,13 @@ reg [7:0] boot_vec;
 always @(posedge clk) 
     boot_vec <= cpu_a[0] ? 8'h08 : 8'h00;
 
-reg [6:0] di_select;
+    
+// problem: Arlet's 6502 advances AB instantly when reading ram
+// so sdram_en will likely be up simultaneously with e.g. rammem_en
+// for sdram the address is locked in sdram_interface, but for the selectors
+// we have to prioritise sdram_en
+    
+reg [5:0] di_select;
 always @(posedge clk)
     if (ce)
         di_select = {&cpu_a[15:4], lowmem_en, bufmem_en, rammem_en, osd_en, 
@@ -149,11 +149,11 @@ always @(posedge clk)
 always @* begin: _cpu_datain
     casez(di_select) 
     6'b1?????:   cpu_di <= boot_vec; //(cpu_a[0] ? 8'h08:8'h00); // boot vector
+    6'b?????1:   cpu_di <= sdram_do; // do not move this line
     6'b010000:   cpu_di <= lowmem_do;
     6'b001000:   cpu_di <= bufmem_do;
     6'b000100:   cpu_di <= ram_do;
     6'b000010:   cpu_di <= display_idata;
-    6'b000001:   cpu_di <= sdram_do;
     default:    cpu_di <= ioports_do;
     endcase
 end                         
@@ -164,7 +164,7 @@ end
 // memory enables
 wire lowmem_en = |cpu_a[15:9] == 0;
 wire bufmem_en = (wd_ram_rd|wd_ram_wr) || (cpu_a >= 16'h200 && cpu_a < 16'h600);
-wire rammem_en = cpu_a >= 16'h0800 && cpu_a < 16'h5000;
+wire rammem_en = (cpu_a >= 16'h0800) && (cpu_a < 16'h5000);
 
 wire sdram_address_match = cpu_a >= SDRAM_WINDOW_BASE && 
     cpu_a < (SDRAM_WINDOW_BASE + SDRAM_WINDOW_SIZE);
@@ -513,6 +513,7 @@ always @(posedge clk) begin
         1:  begin
             if (ena) begin
                 {sdram_rd,sdram_wr} <= memwr ? 2'b01 : 2'b10;
+		if (memwr) data_o <= cpu_data;
                 //if (memwr)
                 //    $display("SDRAM WR: %04x<-%02x", addr, cpu_data);
                 //else

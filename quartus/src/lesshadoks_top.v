@@ -73,7 +73,7 @@ reg [7:0] strobdelay;
 always @(posedge clk_cpu)
 	strobdelay <= {strobdelay[6:0], VU_STROB_SOST};
 	
-assign virt_kvaz_control_word = {strobdelay[7] & kvaz_read, kvaz_read_fast, decoded_a_valid, kvaz_memrd_flag};//vg93debug;
+assign virt_kvaz_control_word = {floppy_sdram_busy, ramc_write, ramc_read, kvaz_memrd_flag};//vg93debug;
 
 wire sys_reset;
 reset_debouncer reset_debouncer(.clk(clk_cpu), .butt_n(BUTT1), 
@@ -326,12 +326,6 @@ wire	[3:0]	fdc_adrs = {shavv_r[2],~shavv_r[1:0]};
 wire	[7:0]	fdc_do;
 
 
-//reg [2:0] div;
-//always @(posedge clk_cpu)
-//	div <= div + 1'b1;
-//
-//wire clken3 = div == 0;
-
 wire [3:0] vg93debug;
 
 floppy floppy0(
@@ -353,12 +347,12 @@ floppy floppy0(
     .hostio_wr(fdc_wr),
 
 //    // path to SDRAM
-//    .sdram_addr(floppy_sdram_addr),
-//    .sdram_data_o(floppy_sdram_do),
-//    .sdram_data_i(floppy_sdram_di),
-//    .sdram_read(floppy_sdram_read),
-//    .sdram_write(floppy_sdram_write),
-//    .sdram_busy(floppy_sdram_busy),
+    .sdram_addr(floppy_sdram_addr),
+    .sdram_data_o(floppy_sdram_do),
+    .sdram_data_i(floppy_sdram_di),
+    .sdram_read(floppy_sdram_read),
+    .sdram_write(floppy_sdram_write),
+    .sdram_busy(floppy_sdram_busy),
     
     // keyboard interface
     .keyboard_keys(keyboard_keys)// {reserved,left,right,up,down,enter}

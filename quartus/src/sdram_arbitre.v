@@ -75,7 +75,12 @@ reg sdram_distributor;
 // команда запуска авторефреша
 assign sdram_refresh = sdram_distributor & access_slot;
 // разрешение доступа зпу
-wire zpu_e = ~sdram_distributor & access_slot;
+wire zpu_e_trig = ~sdram_distributor & access_slot;
+wire zpu_e;
+oneshot #(.CLOCKS(6)) oneshot1(.clk(clk), .ce(1'b1), .trigger(zpu_e_trig), .q(zpu_e));
+
+
+
 always @(posedge clk) begin: _gen_refresh_cmd
     if (reset) 
         sdram_distributor <= 0;
@@ -131,7 +136,17 @@ always @(posedge clk) begin: _zpupkin
                         {zpu_ub,zpu_lb} <= {~disk_adrs[0],disk_adrs[0]};
                         {zpu_sdram_write,zpu_sdram_read} <= 2'b01;
                     end
-		
+		    
+                5'b0101?:   // byte write
+                    begin
+                        ztate_next <= Z_FINISH;
+                        ztate <= zpu_e ? Z_FINISH : Z_WAIT;
+                        disk_data_to_sdram <= {disk_data_i[7:0],disk_data_i[7:0]};
+                        {zpu_ub,zpu_lb} <= {~disk_adrs[0],disk_adrs[0]};
+                        {zpu_sdram_write,zpu_sdram_read} <= 2'b10;
+                    end
+
+		    
                 5'b01000:	// word-aligned dword write
                     begin 
                     ztate_next <= Z_WRITEDW1;
@@ -148,14 +163,6 @@ always @(posedge clk) begin: _zpupkin
 
                         disk_data_to_sdram <= {8'b0,disk_data_i[31:24]};
                         {zpu_ub,zpu_lb} <= 2'b01;
-                        {zpu_sdram_write,zpu_sdram_read} <= 2'b10;
-                    end
-                5'b0101?:   // byte write
-                    begin
-                        ztate_next <= Z_FINISH;
-                        ztate <= zpu_e ? Z_FINISH : Z_WAIT;
-                        disk_data_to_sdram <= {disk_data_i[7:0],disk_data_i[7:0]};
-                        {zpu_ub,zpu_lb} <= {~disk_adrs[0],disk_adrs[0]};
                         {zpu_sdram_write,zpu_sdram_read} <= 2'b10;
                     end
                 5'b01100:   // word-aligned word write
