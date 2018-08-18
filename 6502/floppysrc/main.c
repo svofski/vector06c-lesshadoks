@@ -74,13 +74,9 @@ extern char* ptrfile;
 
 unsigned char * sdram_byte = (unsigned char *)(0x5000);
 
-void main(void) {
-    BYTE res;
-
-    DRESULT result;
-    FRESULT fresult;
+void sdram_probe()
+{
     int i;
-
     for (i = 0; i < 16; ++i) {
         sdram_byte[i] = i;
     }
@@ -89,7 +85,15 @@ void main(void) {
         ser_puts(" ");
     }
     ser_nl();
-    
+}
+
+void main(void) {
+    BYTE res;
+
+    DRESULT result;
+    FRESULT fresult;
+    int i;
+   
     SLAVE_STATUS = 0;
     GREEN_LEDS = 0xC3;
 
@@ -97,10 +101,11 @@ void main(void) {
 #if !SIMULATION
     delay2(10);
 #endif
-    
     ser_nl(); ser_puts(cnotice1); 
     ser_nl(); ser_puts(cnotice2);
     ser_nl(); 
+
+    sdram_probe();
 
     thrall(ptrfile, Buffer);
     print_result(result);

@@ -17,6 +17,7 @@
 //
 // --------------------------------------------------------------------
 
+#include <string.h>
 #include "slave.h"
 #include "specialio.h"
 #include "tff.h"
@@ -66,22 +67,26 @@ uint8_t thrall(char *imagefile, uint8_t *buffer) {
 
     SLAVE_STATUS = CPU_STATUS_DRVNOTRDY;
 
-    ser_puts("[menu]\n");
     menu_init();
 
-    ser_puts("[enter loop]\n");
     for(;;) {
         SLAVE_STATUS = CPU_STATUS_DRVNOTRDY;
         do {
-            ser_puts("[philes_mount]");
-            philes_mount();
+            result = philes_mount();
+            ser_puts("mount() result=\n"); print_hex(result); ser_nl();
             result = philes_opendir();
+            ser_puts("opendir() result=\n"); print_hex(result); ser_nl();
             if (result != FR_OK) break;
 
             if (!first) {
+                for (first = 0; first < 10; ++first) {
                 philes_nextfile(imagefile+10, 1);
+                ser_puts("File: "); ser_puts(imagefile); ser_nl();
+                }
                 first++;
             }
+            strcpy(imagefile+10, "DEMOS.FDD");
+            //strcpy(imagefile+10, "SKYNET.FDD");
 
             ser_nl();
             if ((result = f_open(&file1, imagefile, FA_READ)) != FR_OK) {
@@ -145,7 +150,9 @@ uint8_t slave(void) {
                     vputs("DRVERR");
                 }
 
-                SLAVE_STATUS = CPU_STATUS_COMPLETE | (result == FR_OK ? CPU_STATUS_SUCCESS : 0) | (result == FR_RW_ERROR ? CPU_STATUS_CRC : 0);
+                SLAVE_STATUS = CPU_STATUS_COMPLETE | 
+                    (result == FR_OK ? CPU_STATUS_SUCCESS : 0) | 
+                    (result == FR_RW_ERROR ? CPU_STATUS_CRC : 0);
                 // touche!
 
                 break;
@@ -169,7 +176,8 @@ uint8_t slave(void) {
                     vputs("DRVERR");
                 }
 
-                SLAVE_STATUS = CPU_STATUS_COMPLETE | (result == FR_OK ? CPU_STATUS_SUCCESS : 0);
+                SLAVE_STATUS = CPU_STATUS_COMPLETE | 
+                    (result == FR_OK ? CPU_STATUS_SUCCESS : 0);
                 // touche!
                 break;
             case CPU_REQUEST_WRITE:
@@ -198,11 +206,13 @@ uint8_t slave(void) {
                     vputs("DRVERR");
                 }
 
-                SLAVE_STATUS = CPU_STATUS_COMPLETE | (result == FR_OK ? CPU_STATUS_SUCCESS : 0) | (result == FR_RW_ERROR ? CPU_STATUS_CRC : 0);
+                SLAVE_STATUS = CPU_STATUS_COMPLETE | 
+                    (result == FR_OK ? CPU_STATUS_SUCCESS : 0) | 
+                    (result == FR_RW_ERROR ? CPU_STATUS_CRC : 0);
                 break;
             case CPU_REQUEST_ACK:
                 SLAVE_STATUS = 0;
-                vputc('+');
+                vputc('+'); vputh(cmd & 0x0f); // print boo code
                 break;
             case CPU_REQUEST_NOP:
                 SLAVE_STATUS = CPU_STATUS_BUSY;
@@ -230,7 +240,7 @@ uint8_t slave(void) {
                     return result;
                 }
                 break;
-        }		
+        }
     }
 
     SLAVE_STATUS = 0;

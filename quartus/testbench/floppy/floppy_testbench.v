@@ -23,8 +23,6 @@ wire    [7:0]   idata = 0;
 wire    [7:0]   odata;
 wire            memwr, sd_dat, sd_dat3, sd_cmd, sd_clk, uart_txd;
 
-assign sd_dat = 0;
-
 // hostias
 reg     [2:0]   hostio_addr = 0;
 reg     [7:0]   hostio_idata = 0;
@@ -74,6 +72,8 @@ floppy floppy0(
     // keyboard interface
     .keyboard_keys(keyboard_keys)// {reserved,left,right,up,down,enter}
 );
+
+fakesd sdcard(.cs_n(sd_dat3), .clk(sd_clk), .mosi(sd_cmd), .miso(sd_dat));
 
 reg [3:0] clk_counter = 0;
 always @(posedge clk) clk_counter <= clk_counter + 1;
@@ -158,3 +158,33 @@ SDRAM_Controller ramc(
 );
 
 endmodule
+
+module fakesd(input cs_n, input clk, input mosi, output miso);
+reg [63:0] rxreg = 0;
+reg [63:0] txreg = 64'h0;
+
+integer bitcount;
+
+assign miso = txreg[63];
+
+
+always @(posedge cs_n)
+    $display("bitcount=", bitcount);
+
+always @(posedge clk)
+    if (~cs_n) begin
+        rxreg <= {rxreg[62:0],mosi};
+        txreg <= {txreg[62:0],1'b1};
+        bitcount <= bitcount + 1;
+        if (rxreg[7:0] == 8'h95) txreg <= 64'hff01ffffffffffff;
+        //$write("%d", miso);
+    end
+    else begin
+        bitcount <= 0;
+        //$display("reset");
+        rxreg <= 0;
+        txreg <= 64'h01ffffffffffffff;
+        bitcount <= 0;
+    end
+endmodule
+

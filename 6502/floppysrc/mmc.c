@@ -98,17 +98,16 @@ static void xmit_spi(BYTE dat) {
     asm("       bne @loop");
 }
 #else
-//#define loop_until_bit_is_set(x,b)    {for(;(x)&(b)!=0;);}
-#define loop_until_bit_is_set(x,b)  {}
+#define loop_until_bit_set(x,b)         {for(;((x)&(b))!=0;);}
 
-#define rcvr_spi_m(dst) {SPDR=0xFF; loop_until_bit_is_set(SPSR,SPIF); *(dst)=SPDR;}
-#define xmit_spi(dat)   SPDR=(dat); loop_until_bit_is_set(SPSR,SPIF)
+#define rcvr_spi_m(dst) {SPDR=0xFF; loop_until_bit_set(SPSR,SPIF); *(dst)=SPDR;}
+#define xmit_spi(dat)   SPDR=(dat); loop_until_bit_set(SPSR,SPIF)
 
     static
 BYTE rcvr_spi (void)
 {
     SPDR = 0xFF;
-    loop_until_bit_is_set(SPSR, SPIF);
+    loop_until_bit_set(SPSR, SPIF);
     return SPDR;
 }
 
@@ -231,7 +230,10 @@ BOOL rcvr_datablock (
     do {                            /* Wait for data packet in timeout of 100ms */
         token = rcvr_spi();
     } while ((token == 0xFF) && Timer1);
-    if(token != 0xFE) return FALSE; /* If not valid data token, retutn with error */
+    if(token != 0xFE) {
+        //ser_putc('#'); print_hex(token);
+        return FALSE; /* If not valid data token, retutn with error */
+    }
 
     do {                            /* Receive the data block into buffer */
         rcvr_spi_m(buff++);
@@ -323,6 +325,7 @@ BYTE send_cmd (
 {
     BYTE n, res;
 
+    //ser_puts("CMD="); print_hex(cmd); print_hex(arg>>24); print_hex(arg>>16); print_hex(arg>>8); print_hex(arg);
 
     if (cmd & 0x80) {   /* ACMD<n> is the command sequense of CMD55-CMD<n> */
         cmd &= 0x7F;
@@ -345,13 +348,13 @@ BYTE send_cmd (
     if (cmd == CMD0) n = 0x95;          /* CRC for CMD0(0) */
     if (cmd == CMD8) n = 0x87;          /* CRC for CMD8(0x1AA) */
     xmit_spi(n);
-
     /* Receive command response */
     if (cmd == CMD12) rcvr_spi();       /* Skip a stuff byte when stop reading */
     n = 10;                             /* Wait for a valid response in timeout of 10 attempts */
-    do
+    do {
         res = rcvr_spi();
-    while ((res & 0x80) && --n);
+    } while ((res & 0x80) && --n);
+    //ser_putc('.'); print_hex(res); ser_nl();
 
     return res;         /* Return with the response value */
 }
@@ -381,7 +384,6 @@ DSTATUS disk_poll(BYTE drv) {
     }
 
     release_spi();
-
     return res;
 }
 
@@ -395,7 +397,6 @@ DSTATUS disk_initialize (
 {
     BYTE n, cmd, ty, ocr[4];
 
-
     if (drv) return STA_NOINIT;         /* Supports only single drive */
     if (Stat & STA_NODISK) return Stat; /* No card in the socket */
 
@@ -404,13 +405,12 @@ DSTATUS disk_initialize (
 
     ty = 0;
     if (send_cmd(CMD0, 0) == 1) {           /* Enter Idle state */
-        ser_puts("[100]\n");
         Timer1 = 100;                       /* Initialization timeout of 1000 msec */
         if (send_cmd(CMD8, 0x1AA) == 1) {   /* SDHC */
             for (n = 0; n < 4; n++) ocr[n] = rcvr_spi();        /* Get trailing return value of R7 resp */
             if (ocr[2] == 0x01 && ocr[3] == 0xAA) {             /* The card can work at vdd range of 2.7-3.6V */
-                while (Timer1 && send_cmd(ACMD41, 1UL << 30));  /* Wait for leaving idle state (ACMD41 with HCS bit) */
-                if (Timer1 && send_cmd(CMD58, 0) == 0) {        /* Check CCS bit in the OCR */
+                while (/*Timer1 &&*/ send_cmd(ACMD41, 1UL << 30));  /* Wait for leaving idle state (ACMD41 with HCS bit) */
+                if (/*Timer1 &&*/ send_cmd(CMD58, 0) == 0) {        /* Check CCS bit in the OCR */
                     for (n = 0; n < 4; n++) ocr[n] = rcvr_spi();
                     ty = (ocr[0] & 0x40) ? 12 : 4;
                 }
@@ -421,8 +421,8 @@ DSTATUS disk_initialize (
             } else {
                 ty = 1; cmd = CMD1;     /* MMC */
             }
-            while (Timer1 && send_cmd(cmd, 0));         /* Wait for leaving idle state */
-            if (!Timer1 || send_cmd(CMD16, 512) != 0)   /* Set R/W block length to 512 */
+            while (/*Timer1 &&*/ send_cmd(cmd, 0));         /* Wait for leaving idle state */
+            if (/*!Timer1 || */send_cmd(CMD16, 512) != 0)   /* Set R/W block length to 512 */
                 ty = 0;
         }
     }
@@ -431,10 +431,12 @@ DSTATUS disk_initialize (
 
     if (ty) {           /* Initialization succeded */
         Stat &= ~STA_NOINIT;        /* Clear STA_NOINIT */
+        ser_puts("OCR:");
+        for (n = 0; n < 4; n++) print_hex(ocr[n]); 
+        ser_nl();
     } else {            /* Initialization failed */
         power_off();
     }
-
     return Stat;
 }
 

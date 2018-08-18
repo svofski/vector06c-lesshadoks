@@ -39,7 +39,7 @@
 #include <string.h>
 #include "tff.h"		/* Tiny-FatFs declarations */
 #include "diskio.h"		/* Include file for user provided disk functions */
-
+#include "serial.h"
 
 static
 FATFS *FatFs;			/* Pointer to the file system objects (logical drive) */
@@ -1243,6 +1243,7 @@ FRESULT f_opendir (
 
 
 	res = auto_mount(&path, 0);
+        ser_puts("auto_mount:"); print_hex(res);
 	if (res != FR_OK) return res;
 
 	res = trace_path(dirobj, fn, path, &dir);	/* Trace the directory path */

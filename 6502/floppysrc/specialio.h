@@ -53,8 +53,8 @@
 #define		DISPLAY_RAMSIZE		256
 
 #define		MMC_A		(*((unsigned char *)(IOPORT_BASE+IOPORT_MMC_A)))
-#define		SPDR		(*((unsigned char *)(IOPORT_BASE+IOPORT_SPDR)))
-#define		SPSR        (*((unsigned char *)(IOPORT_BASE+IOPORT_SPSR)))
+#define		SPDR		(*((volatile unsigned char *)(IOPORT_BASE+IOPORT_SPDR)))
+#define		SPSR        (*((volatile unsigned char *)(IOPORT_BASE+IOPORT_SPSR)))
 #define		JOYSTICK	(*((unsigned char *)(IOPORT_BASE+IOPORT_JOY)))
 
 #define		SERIAL_TxD	(*((unsigned char *)(IOPORT_BASE+IOPORT_SERIAL_TxD)))
