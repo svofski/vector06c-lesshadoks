@@ -40,7 +40,7 @@ static int16_t drvsel[3] = {0,-1,-1};
 
 static void send_buf(const uint8_t * data);
 static void recv_buf(uint8_t * data);
-static void handle_request(void);
+static uint8_t handle_request(void);
 static void do_catalog(void);
 static void do_select(void);
 static uint8_t next_token(void);
@@ -50,6 +50,7 @@ static void solo(uint8_t prio, uint8_t a, uint8_t b);
 
 void menu_init()
 {
+    DESELECT_ESP();
 }
 
 uint8_t menu_dispatch(uint8_t tick)
@@ -57,9 +58,7 @@ uint8_t menu_dispatch(uint8_t tick)
     txbuf[0] = MTS_POLL_USER_COMMAND;
     send_buf(txbuf);
     recv_buf(rxbuf);
-    handle_request();
-
-    return MENURESULT_NOTHING;
+    return handle_request();
 }
 
 uint8_t menu_busy(uint8_t yes)
@@ -67,18 +66,19 @@ uint8_t menu_busy(uint8_t yes)
     return 0;
 }
 
-void handle_request()
+uint8_t handle_request()
 {
     switch (rxbuf[0]) {
         case STM_CATALOG:
             do_catalog();
-            return;
+            return MENURESULT_NOTHING;
         case STM_SELECT:
             do_select();
-            return;
+            return MENURESULT_DISK;
         default:
             break;
     }
+    return MENURESULT_NOTHING;
 }
 
 char sel(int16_t i) {
