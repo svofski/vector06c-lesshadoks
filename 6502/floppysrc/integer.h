@@ -25,6 +25,8 @@ typedef enum { FALSE = 0, TRUE } BOOL;
 typedef BYTE 	uint8_t;
 typedef WORD	uint16_t;
 typedef DWORD	uint32_t;
+typedef SHORT   int16_t;
+typedef CHAR    int8_t;
 
 #define _INTEGER
 #endif

@@ -88,10 +88,14 @@
 #define		JOY_FIRE	0x01
 
 // MMC_A bits
-#define 	MMC_DAT3		1
+#define 	MMC_DAT3		(1<<0)
+#define         CS_ESP8266              (1<<1)
 
 #define SELECT()	MMC_A &= ~MMC_DAT3
 #define DESELECT()	MMC_A |= MMC_DAT3
+
+#define SELECT_ESP()    MMC_A &= ~CS_ESP8266
+#define DESELECT_ESP()  MMC_A |= CS_ESP8266
 
 #define SPIF	0x01
 

@@ -61,6 +61,9 @@ FIL	file1;
 uint8_t blink(void);
 uint8_t slave(void);
 
+/* imagefile points to a global buffer, which can be modified externally */
+/* by an osd menu for example */
+/* see menu.c: fsel_getselected(ptrfile+10) */
 uint8_t thrall(char *imagefile, uint8_t *buffer) {
     uint8_t first = 0;
     uint8_t result;
@@ -78,14 +81,12 @@ uint8_t thrall(char *imagefile, uint8_t *buffer) {
             ser_puts("opendir() result=\n"); print_hex(result); ser_nl();
             if (result != FR_OK) break;
 
+            /* first run, initialise imagefile with the first file in the dir */
             if (!first) {
-                for (first = 0; first < 10; ++first) {
                 philes_nextfile(imagefile+10, 1);
-                ser_puts("File: "); ser_puts(imagefile); ser_nl();
-                }
                 first++;
             }
-            strcpy(imagefile+10, "DEMOS.FDD");
+            //strcpy(imagefile+10, "DEMOS.FDD");
             //strcpy(imagefile+10, "SKYNET.FDD");
 
             ser_nl();
@@ -101,6 +102,7 @@ uint8_t thrall(char *imagefile, uint8_t *buffer) {
 
             fdd_load(&file1, &fddimage, buffer);
             slave();
+            /* slave exits when a new image file is selected */
         } while(0);
         menu_busy(2);
         menu_dispatch(0);
@@ -247,7 +249,6 @@ uint8_t slave(void) {
     return result;
 }
 
-
 uint8_t blink(void) {
     static uint8_t leds = 0x01;
     static uint8_t delay = 1;
@@ -267,3 +268,4 @@ uint8_t blink(void) {
 
     return menu_dispatch(tick);
 }
+

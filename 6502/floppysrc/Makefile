@@ -2,6 +2,8 @@ C65=../cc65/bin/cc65
 A65=../cc65/bin/ca65
 L65=../cc65/bin/ld65
 
+WEB_OSD ?= 1
+
 DSTDIR=../../firmware/6502
 
 SRCS:=$(foreach srcfile,./,$(wildcard *.c))
@@ -18,7 +20,7 @@ SIMFLAG=-DSIMULATION=$(SIM)
 
 # snapshot version of cc65 has a patch regarding -Os
 # release version will only work with -Oirs
-CFLAGS=-Os -t none -T --cpu 6502 $(SIMFLAG)
+CFLAGS=-Os -t none -T --cpu 6502 -DWEB_OSD=$(WEB_OSD) $(SIMFLAG)
 
 all:	disk
 

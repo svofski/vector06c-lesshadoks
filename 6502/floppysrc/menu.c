@@ -17,6 +17,8 @@
 //
 // --------------------------------------------------------------------
 
+#if !(WEB_OSD)
+
 #include "integer.h"
 #include "specialio.h"
 #include "osd.h"
@@ -73,6 +75,8 @@ extern char* cnotice2;
 extern char* dude[];
 uint8_t dude_seqno;
 
+static void draw_menu(void);
+static void draw_item(char *s, uint8_t x, uint8_t y, uint8_t align);
 
 static void switch_state(void);
 static void draw_fsel(void);
@@ -359,9 +363,9 @@ void fsel_getselected(char *file) {
 
 char* aboot2   = "";
 char* aboot4   = "sensi.org/~svo/vector06c";
-char* aboot3   = "vector06cc.googlecode.com";
+char* aboot3   = "github.com/svofski/";
 char* aboot5   = "";
-char* aboot6   = "Thank you for using VECTOR-06CC!";
+char* aboot6   = "Merci pour utiliser Les Shadoks!";
 //char* aboot6   = "--------------------------------";
 
 char* dude[]   = {"\\o/",
@@ -403,3 +407,5 @@ void aboot_anim() {
     }
     dude_seqno = (dude_seqno + 1) % 16;
 }
+
+#endif
