@@ -119,6 +119,7 @@ void spi_init_gpio(uint8 spi_no, uint8 sysclk_as_spiclk)
 ICACHE_FLASH_ATTR
 void spi_deinit(uint8 spi_no)
 {
+    spi_tx_bit_order(HSPI, 1); // restore bit order
     if (spi_no == HSPI) {
         //WRITE_PERI_REG(PERIPHS_IO_MUX, 0x105|(clock_div_flag<<9)); //Set bit 9 if 80MHz sysclock required
         PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDI_U, 0); //GPIO12 is GPIO

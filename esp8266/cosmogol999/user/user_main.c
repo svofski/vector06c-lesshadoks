@@ -32,8 +32,10 @@ some pictures of cats.
 #include "cgi.h"
 #include "cgispiffs.h"
 #include "cgirboot.h"
+#include "cgifloppy.h"
 
 #include "uart.h"
+#include "slave.h"
 
 #define AP_SSID "ЛЕШАДОК ПОМПЕ"
 #define AP_PSK "pompaient"
@@ -64,14 +66,18 @@ HttpdBuiltInUrl builtInUrls[]={
 	{"/wifi/connstatus.cgi", cgiWiFiConnStatus, NULL},
 	{"/wifi/setmode.cgi", cgiWiFiSetMode, NULL},
 
+        {"/floppy", cgiRedirect, "/floppy/index.html"},
+        {"/floppy/", cgiRedirect, "/floppy/index.html"},
+        {"/floppy/catalog", cgiFloppyCatalog, NULL},
+        {"/floppy/select", cgiFloppySelect, NULL},
+
 	{"*", cgiEspFsHook, NULL}, //Catch-all cgi function for the filesystem
 	{NULL, NULL, NULL}
 };
 
-#if 1
+#if 0
 void ICACHE_FLASH_ATTR wifiInit() {
     struct ip_info ap_ip;
-    uint8_t wifi_get_opmode();
     switch(wifi_get_opmode()) {
         case STATIONAP_MODE:
         case SOFTAP_MODE:
@@ -103,6 +109,15 @@ void ICACHE_FLASH_ATTR wifiInit() {
         default:
             break;
     }
+}
+#else
+void ICACHE_FLASH_ATTR wifiInit() 
+{
+    wifi_set_opmode_current(STATION_MODE);
+    struct station_config sc;
+    strcpy((char *)sc.ssid, "svo");
+    strcpy((char *)sc.password, "duddaboo123");
+    wifi_station_set_config(&sc); 
 }
 #endif
 
@@ -143,10 +158,11 @@ ICACHE_FLASH_ATTR void user_init(void) {
 
     //wifi_set_sleep_type(MODEM_SLEEP_T);
     //wifi_set_sleep_type(LIGHT_SLEEP_T);
+    // no sleep == no interference when waking up
     wifi_set_sleep_type(NONE_SLEEP_T);
     system_phy_set_max_tpw(1);
 
-    //sdk_system_deep_sleep(1000); -- what to do after deep sleep? 
+    slave_init();
 
     printf("\nuser_init() done\n");
 }

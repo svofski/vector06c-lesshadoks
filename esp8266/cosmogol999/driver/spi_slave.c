@@ -11,123 +11,100 @@ void (*hspi_rxstatus_cb)(void * arg, uint32_t data) = NULL;
 void (*hspi_txstatus_cb)(void * arg) = NULL;
 
 static uint8_t buffer[32];
-static void spi_slave_isr_handler(void *para);
+static uint8_t txbuf[32];
 
-/******************************************************************************
- * FunctionName : spi_slave_init
- * Description  : SPI slave mode initial funtion, including mode setting,
- *      IO setting, transmission interrupt opening, interrupt function 
- *      registration
- * Parameters   :   
- *      uint8 spi_no - SPI module number, SPI or HSPI
- *      uint8 data_len - read&write data pack length,using byte as unit,
- *              the range is 1-32
- *******************************************************************************/
+void spi_slave_isr_handler(void *para);
+
 void ICACHE_FLASH_ATTR
-spi_slave_init(uint8 spi_no, uint8 data_len)
+spi_slave_init(uint8_t data_len, void * context)
 {
-    uint32 data_bit_len;
-    if(spi_no>1)
-        return; //handle invalid input number
+    PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDI_U, 2);//configure io to spi mode
+    PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTCK_U, 2);//configure io to spi mode    
+    PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTMS_U, 2);//configure io to spi mode    
+    PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDO_U, 2);//configure io to spi mode    
 
-    if (data_len<=1) {
-        data_bit_len=7;
-    } 
-    else if (data_len>=32) {
-        data_bit_len=0xff;
-    }
-    else {
-        data_bit_len=(data_len<<3)-1;
-    }
-
-    //clear bit9,bit8 of reg PERIPHS_IO_MUX
-    //bit9 should be cleared when HSPI clock doesn't equal CPU clock
-    //bit8 should be cleared when SPI clock doesn't equal CPU clock
-    ////WRITE_PERI_REG(PERIPHS_IO_MUX, 0x105); //clear bit9//TEST
-    if(spi_no==SPI){
-        PIN_FUNC_SELECT(PERIPHS_IO_MUX_SD_CLK_U, 1);//configure io to spi mode
-        PIN_FUNC_SELECT(PERIPHS_IO_MUX_SD_CMD_U, 1);//configure io to spi mode  
-        PIN_FUNC_SELECT(PERIPHS_IO_MUX_SD_DATA0_U, 1);//configure io to spi mode    
-        PIN_FUNC_SELECT(PERIPHS_IO_MUX_SD_DATA1_U, 1);//configure io to spi mode    
-    }else if(spi_no==HSPI){
-        PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDI_U, 2);//configure io to spi mode
-        PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTCK_U, 2);//configure io to spi mode    
-        PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTMS_U, 2);//configure io to spi mode    
-        PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDO_U, 2);//configure io to spi mode    
-    }
-
-    //regvalue=READ_PERI_REG(SPI_FLASH_SLAVE(spi_no));
-    //slave mode,slave use buffers which are register "SPI_FLASH_C0~C15", 
-    //enable trans done isr
-    //set bit 30 bit 29 bit9,bit9 is trans done isr mask
-    SET_PERI_REG_MASK(SPI_SLAVE(spi_no), 
+    WRITE_PERI_REG(SPI_SLAVE(HSPI), 
             SPI_SLAVE_MODE|SPI_SLV_WR_RD_BUF_EN|
             SPI_SLV_WR_BUF_DONE_EN|SPI_SLV_RD_BUF_DONE_EN|
             SPI_SLV_WR_STA_DONE_EN|SPI_SLV_RD_STA_DONE_EN|
             SPI_TRANS_DONE_EN);
-    //disable general trans intr 
-    //CLEAR_PERI_REG_MASK(SPI_SLAVE(spi_no),SPI_TRANS_DONE_EN);
 
-    //disable flash operation mode
-    CLEAR_PERI_REG_MASK(SPI_USER(spi_no), SPI_FLASH_MODE);
-    //SLAVE SEND DATA BUFFER IN C8-C15 
-    //"MISO phase uses W8-W15"
-    SET_PERI_REG_MASK(SPI_USER(spi_no),
+    WRITE_PERI_REG(SPI_USER(HSPI),
             SPI_USR_COMMAND|        // Command phase
             SPI_USR_MISO_HIGHPART|  // MISO phase uses W8-W15
             SPI_CK_I_EDGE);         // data on rising edge of clk
 
+    //SET_PERI_REG_MASK(SPI_CTRL2(HSPI), 
+    //        (0x2&SPI_MOSI_DELAY_NUM)<<SPI_MOSI_DELAY_NUM_S);
 
-    //////**************RUN WHEN SLAVE RECIEVE*******************///////
-    //tow lines below is to configure spi timing.
-    SET_PERI_REG_MASK(SPI_CTRL2(spi_no),
-            (0x2&SPI_MOSI_DELAY_NUM)<<SPI_MOSI_DELAY_NUM_S) ;//delay num
-    os_printf("SPI_CTRL2 is %08x\n",READ_PERI_REG(SPI_CTRL2(spi_no)));
-    WRITE_PERI_REG(SPI_CLOCK(spi_no), 0);
+    os_printf("SPI_CTRL2 is %08x\n",READ_PERI_REG(SPI_CTRL2(HSPI)));
 
-    //set 8 bit slave command length, because slave must have at least one 
-    //bit addr, 
-    //8 bit slave+8bit addr, so master device first 2 bytes can be regarded 
-    //as a command and the  following bytes are datas, 
-    //32 bytes input wil be stored in SPI_FLASH_C0-C7
-    //32 bytes output data should be set to SPI_FLASH_C8-C15
-    WRITE_PERI_REG(SPI_USER2(spi_no), 
-            (0x7&SPI_USR_COMMAND_BITLEN)<<SPI_USR_COMMAND_BITLEN_S); //0x70000000
+    WRITE_PERI_REG(SPI_CLOCK(HSPI), 0);
 
-    //set 8 bit slave recieve buffer length, the buffer is SPI_FLASH_C0-C7
-    //set 8 bit slave status register, which is the low 8 bit of register 
-    //"SPI_FLASH_STATUS"
-    SET_PERI_REG_MASK(SPI_SLAVE1(spi_no),  
-            ((data_bit_len&SPI_SLV_BUF_BITLEN)<< SPI_SLV_BUF_BITLEN_S)|
-            ((0x7&SPI_SLV_STATUS_BITLEN)<<SPI_SLV_STATUS_BITLEN_S)|
-            ((0x7&SPI_SLV_WR_ADDR_BITLEN)<<SPI_SLV_WR_ADDR_BITLEN_S)|
-            ((0x7&SPI_SLV_RD_ADDR_BITLEN)<<SPI_SLV_RD_ADDR_BITLEN_S));
+// this does not work
+//    SET_PERI_REG_MASK(SPI_SLAVE1(HSPI),  
+//            ((data_bit_len&SPI_SLV_BUF_BITLEN)<< SPI_SLV_BUF_BITLEN_S)|
+//            ((0x7&SPI_SLV_STATUS_BITLEN)<<SPI_SLV_STATUS_BITLEN_S)|
+//            ((0x7&SPI_SLV_WR_ADDR_BITLEN)<<SPI_SLV_WR_ADDR_BITLEN_S)|
+//            ((0x7&SPI_SLV_RD_ADDR_BITLEN)<<SPI_SLV_RD_ADDR_BITLEN_S));
 
-    SET_PERI_REG_MASK(SPI_PIN(spi_no),BIT19);//BIT19   
+// this seems to work better, except that at this link it's all wrong
+// https://bbs.espressif.com/viewtopic.php?f=7&t=2727
+
+
+
+    // (SPILCOMMAND), seems to be command length = 8-1
+    //SET_PERI_REG_BITS(SPI_USER2(HSPI), SPI_USR_COMMAND_BITLEN,
+    //        7, SPI_USR_COMMAND_BITLEN_S);
+    WRITE_PERI_REG(SPI_USER2(HSPI), 7<<SPI_USR_COMMAND_BITLEN_S);
+
+    WRITE_PERI_REG(SPI_SLAVE1(HSPI), 0);
+    // (SPIS1LWBA) address is 8-1 bits
+    SET_PERI_REG_BITS(SPI_SLAVE1(HSPI), SPI_SLV_WR_ADDR_BITLEN,
+            7, SPI_SLV_WR_ADDR_BITLEN_S);
+
+    // (SPIS1LRBA) address is 8-1 bits
+    SET_PERI_REG_BITS(SPI_SLAVE1(HSPI), SPI_SLV_RD_ADDR_BITLEN,
+            7, SPI_SLV_RD_ADDR_BITLEN_S);
+
+    // slave buffer bits: 255 (SPIS1LBUF)
+    SET_PERI_REG_BITS(SPI_SLAVE1(HSPI), SPI_SLV_BUF_BITLEN,
+            255, SPI_SLV_BUF_BITLEN_S);
+
+    // status length: 32-1 (SPIS1LSTA in arduino)
+    SET_PERI_REG_BITS(SPI_SLAVE1(HSPI), SPI_SLV_STATUS_BITLEN,
+                                      31, SPI_SLV_STATUS_BITLEN_S);
+
+    //SET_PERI_REG_MASK(SPI_PIN(HSPI),BIT19);//BIT19 mystery bit
+    WRITE_PERI_REG(SPI_PIN(HSPI),BIT19);//BIT19 mystery bit
 
     // "maybe enable slave transmission liston" (sic!)
-    SET_PERI_REG_MASK(SPI_CMD(spi_no), SPI_USR);
+    //SET_PERI_REG_MASK(SPI_CMD(HSPI), SPI_USR);
+    WRITE_PERI_REG(SPI_CMD(HSPI), SPI_USR);
 
-    ETS_SPI_INTR_ATTACH(spi_slave_isr_handler,NULL);
+    ETS_SPI_INTR_ATTACH(spi_slave_isr_handler, context);
     ETS_SPI_INTR_ENABLE(); 
 }
 
 void ICACHE_FLASH_ATTR
-spi_slave_deinit(uint8 spi_no, uint8 data_len)
+spi_slave_deinit()
 {
-    if (spi_no == HSPI) {
-        PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDI_U, 0); //GPIO12 is GPIO
-        PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTCK_U, 0); //GPIO13 is GPIO
-        PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTMS_U, 0); //GPIO14 is GPIO
-        PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDO_U, 0); //GPIO15 is GPIO
-    }
-    WRITE_PERI_REG(SPI_SLAVE(spi_no), 0);
-    // SPIUSSE | SPIUCOMMAND
-    WRITE_PERI_REG(SPI_USER1(spi_no), SPI_USR_COMMAND | SPI_CK_I_EDGE);
-    WRITE_PERI_REG(SPI_SLAVE1(spi_no), 0);
-    WRITE_PERI_REG(SPI_PIN(spi_no), 6);
+    ETS_SPI_INTR_ATTACH(NULL,NULL);
+    ETS_SPI_INTR_DISABLE(); 
+
+    PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDI_U, 0); //GPIO12 is GPIO
+    PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTCK_U, 0); //GPIO13 is GPIO
+    PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTMS_U, 0); //GPIO14 is GPIO
+    PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDO_U, 0); //GPIO15 is GPIO
+
+    WRITE_PERI_REG(SPI_SLAVE(HSPI), 0);
+    
+    WRITE_PERI_REG(SPI_USER1(HSPI), SPI_USR_COMMAND | SPI_CK_I_EDGE);
+    WRITE_PERI_REG(SPI_SLAVE1(HSPI), 0);
+    WRITE_PERI_REG(SPI_PIN(HSPI), 6);
 }
 
+//ICACHE_FLASH_ATTR
 void spi_slave_isr_handler(void *para)
 {
     if (READ_PERI_REG(0x3ff00020)&BIT4) {
@@ -142,7 +119,13 @@ void spi_slave_isr_handler(void *para)
                 SPI_SLV_RD_STA_DONE_EN|
                 SPI_SLV_WR_BUF_DONE_EN|
                 SPI_SLV_RD_BUF_DONE_EN);
-        SET_PERI_REG_MASK(SPI_SLAVE(HSPI), SPI_SYNC_RESET); // reset
+
+
+        // there is no explanation why this must be done
+        // if it is done like so, unless there is a delay, 
+        // subsequent transaction will be ruined
+        // SET_PERI_REG_MASK(SPI_SLAVE(HSPI), SPI_SYNC_RESET); // reset
+
         CLEAR_PERI_REG_MASK(SPI_SLAVE(HSPI),    // clear interrupt flags
                 SPI_TRANS_DONE|
                 SPI_SLV_WR_STA_DONE|
@@ -166,17 +149,19 @@ void spi_slave_isr_handler(void *para)
             uint32 s = READ_PERI_REG(SPI_RD_STATUS(HSPI));
             hspi_rxstatus_cb(para, s);
         }
-        if ((status & SPI_SLV_WR_BUF_DONE) && hspi_rxdata_cb) {
-            uint32 data;
+        if (status & SPI_SLV_WR_BUF_DONE) {
+            uint32 data; 
             for (int i = 0; i < 8; ++i) {
-                data = READ_PERI_REG(SPI_W0(HSPI) + i);
+                data = READ_PERI_REG(SPI_W0(HSPI) + (i<<2));
                 buffer[i<<2] = data & 0xff;
                 buffer[(i<<2)+1] = (data >> 8) & 0xff;
                 buffer[(i<<2)+2] = (data >> 16) & 0xff;
                 buffer[(i<<2)+3] = (data >> 24) & 0xff;
             }
 
-            hspi_rxdata_cb(para, buffer, 32);
+            if (hspi_rxdata_cb) {
+                hspi_rxdata_cb(para, buffer, 32);
+            }
         }
     }
     else if (READ_PERI_REG(0x3ff00020)&BIT9) { //bit7 is for i2s isr,
@@ -184,22 +169,31 @@ void spi_slave_isr_handler(void *para)
 }
 
 void ICACHE_FLASH_ATTR
-spi_slave_setdata(uint8_t * data, uint8_t len)
+spi_slave_set_data(uint8_t * data, uint8_t len)
 {
-    uint32_t out;
-    for (int i = 0, wi = 8, bi = 0; i < 32; ++i) {
-        out |= (i<len) ? (data[i] << (bi * 8)) : 0;
-        bi = (bi + 1) & 3;
-        if (!bi) {
-            WRITE_PERI_REG(SPI_W0(HSPI) + wi, (uint32)(data));
-            out = 0;
-            ++wi;
-        }
-    }
+    if (len > 32) len = 32;
+
+    printf("spi_slave_set_data: %02x %02x len=%d\n", data[0], data[1], len);
+
+    memcpy(txbuf, data, len);
+    memset(txbuf + len, 0, 32-len);
+    //for (int i = 0; i < 32; ++i) txbuf[i] = i;
+    memcpy((uint32_t *)SPI_W8(HSPI), txbuf, 32);
+
+// arduino-style diarrhea, why? 
+//    for (int i = 0, wi = 8, bi = 0; i < len; ++i) {
+//        out |= (i<len) ? (data[i] << (bi * 8)) : 0;
+//        bi = (bi + 1) & 3;
+//        if (!bi || (i + 1) == len) {
+//            WRITE_PERI_REG(SPI_W0(HSPI) + (wi<<2), (uint32)(data));
+//            out = 0;
+//            ++wi;
+//        }
+//    }
 }
 
 void ICACHE_FLASH_ATTR
-spi_slave_setstatus(uint32_t status)
+spi_slave_set_status(uint32_t status)
 {
     WRITE_PERI_REG(SPI_WR_STATUS(HSPI), status);
 }

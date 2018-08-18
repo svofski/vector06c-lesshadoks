@@ -1,0 +1,86 @@
+<html><meta charset="UTF-8"><head><title>Эмулятор дисковода</title>
+<script type="text/javascript" src="../140medley.min.js"></script>
+<script type="text/javascript" src="../util.js"></script>
+<link rel="stylesheet" type="text/css" href="../style.css">
+<script type="text/javascript">
+
+var xhr = j();
+
+function selectFDD(drv, fdd)
+{
+    console.log("selectFDD(" + drv + "," + fdd + ");");
+    xhr.open("POST", "select");
+    xhr.onreadystatechange=function() {
+        if (xhr.readyState==4 && xhr.status>=200 && xhr.status<300) {
+            doCatalog();
+        }
+    };
+    xhr.setRequestHeader("Content-Type", "text/plain");
+    xhr.setRequestHeader("X-Drive", drv);
+    xhr.setRequestHeader("X-FileName", fdd);
+
+    xhr.send();
+    
+    return false;
+}
+
+function fillList(dobj)
+{
+    console.log(dobj);
+    var txt = "";
+
+    var sel = function(n,i) {
+        switch (dobj.files[i][0]) {
+                case "A":   return n === 0 ? "sel" : "";
+                case "B":   return n === 1 ? "sel" : "";
+                case "R":   return n === 10 ? "sel" : "";
+        }
+    };
+    var name = function(i) {
+        return dobj.files[i].substring(1);
+    };
+    for (var i = 0; i < dobj.files.length; ++i) {
+        txt += "<li>";
+        txt += "<div onclick='return selectFDD(\"A\",\"" + name(i) + 
+            "\");' class='floppy " + sel(0,i) + "'>A</div>";
+        txt += "<div onclick='return selectFDD(\"B\",\"" + name(i) + 
+            "\");' class='floppy " + sel(1,i) + "'>B</div>";
+        txt += "<div onclick='return selectFDD(\"R\", \"" + name(i) + 
+            "\");' class='kvaz " + sel(10,i) + "'>C</div>";
+        txt += "<div class='fddname'>" + name(i) + "</div>";
+        
+        txt += "</li>";
+    }
+    $("#dir").innerHTML=txt;
+}
+
+function doCatalog() {
+    xhr.open("GET", "catalog");
+    xhr.onreadystatechange=function() {
+        if (xhr.readyState==4 && xhr.status>=200 && xhr.status<300) {
+            var dobj = JSON.parse(xhr.responseText);
+            fillList(dobj);
+        }
+    };
+    xhr.send();
+}
+
+window.onload = function(e) {
+    doCatalog();
+
+    //var txt='{"files":["DISK1.FDD","DISK2.FDD","DISK3.FDD","DISK4.FDD","DISK5.FDD","DISK6.FDD","DISK7.FDD","DISK8.FDD","DISK9.FDD","DISK10.FDD","DISK11.FDD","DISK12.FDD","DISK13.FDD","DISK14.FDD","DISK15.FDD","DISK16.FDD"],"selected":{"0":0,"1":5,"10":12}}';
+    //fillList(JSON.parse(txt));
+};
+
+</script>
+</head>
+<body>
+    <a id="up" href="..">..</a>
+    <div id="main">
+    <h1>Интерфейс эмулятора дисковода</h1>
+    Образы дискет на SD-карте:
+    <pre id="dir">
+    Les Shadoks, pompent-ils? Pompent-ils pas?...
+    </pre>
+</body>
+</html>
