@@ -9,9 +9,13 @@ Features (real and planned):
   - [x] RAM disk expansion in SDRAM
   - [x] AY and other sound device emulation
   - [ ] Joystick ports
-  - [ ] Floppy disk emulator 
-  - [ ] Floppy images on SD card or downloaded from the internets
-  - [ ] ESP12F working as FPGA configurator
+  - [x] floppy disk emulator
+  - [x] floppy images on SD card
+  - [ ] floppy images downloaded from the internets
+  - [x] ESP12F working as FPGA configurator
+  - [ ] ESP12F as user interface for SD card image selection
+  - [ ] ESP12F for uploading floppy disk images to SDRAM
+  - [ ] VI53 sound passthrough
   
 Key hardware features:
   * Main chip: EP4CE6 Intel Cyclone IV device
