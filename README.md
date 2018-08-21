@@ -13,7 +13,7 @@ Features (real and planned):
   - [x] floppy images on SD card
   - [ ] floppy images downloaded from the internets
   - [x] ESP12F working as FPGA configurator
-  - [ ] ESP12F as user interface for SD card image selection
+  - [x] ESP12F as user interface for SD card image selection
   - [ ] ESP12F for uploading floppy disk images to SDRAM
   - [ ] VI53 sound passthrough
   
