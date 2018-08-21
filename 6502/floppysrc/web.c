@@ -2,6 +2,7 @@
 #include "menu.h"
 #include "philes.h"
 #include "serial.h"
+#include "timer.h"
 #include <string.h>
 
 typedef enum _master_to_slave {
@@ -20,12 +21,6 @@ typedef enum _slave_to_master {
     STM_WAIT = 32,
     STM_READY = 33,
 } stm_t;
-
-typedef enum _mastercall {
-    MSTAT_NONE = 0,
-    MSTAT_MORE = 1,     // expect more data
-    MSTAT_END = 2,      // data end
-} master_status_t;
 
 #define loop_until_bit_set(x,b)         {for(;((x)&(b))!=0;);}
 #define rcvr_spi_m(dst) {SPDR=0xFF; loop_until_bit_set(SPSR,SPIF); *(dst)=SPDR;}
@@ -55,10 +50,15 @@ void menu_init()
 
 uint8_t menu_dispatch(uint8_t tick)
 {
-    txbuf[0] = MTS_POLL_USER_COMMAND;
-    send_buf(txbuf);
-    recv_buf(rxbuf);
-    return handle_request();
+    if (tick) {
+        uint8_t i;
+        for (i = 1; i < sizeof(txbuf); ++i) txbuf[i] = 0xe5;
+        txbuf[0] = MTS_POLL_USER_COMMAND;
+        send_buf(txbuf);
+        recv_buf(rxbuf);
+        return handle_request();
+    }
+    return MENURESULT_NOTHING;
 }
 
 uint8_t menu_busy(uint8_t yes)
@@ -76,6 +76,7 @@ uint8_t handle_request()
             do_select();
             return MENURESULT_DISK;
         default:
+            //ser_puts("req:"); print_hex(rxbuf[0]); ser_nl();
             break;
     }
     return MENURESULT_NOTHING;
@@ -106,22 +107,25 @@ void do_catalog()
                 txbuf[3] = sel(i); // mark selection
                 txbuf[2] = next_token(); // accept token
                 txbuf[1] = strlen(&txbuf[3]); // data size
-                txbuf[0] = MSTAT_MORE; // always more
+                txbuf[0] = MTS_REPLY_MORE; // always more
 
                 send_buf(txbuf);
+                ser_puts(&txbuf[3]); ser_puts("tok="); print_hex(ready_token);
             } while(wait_token(ready_token) == -1); // resend until ok
         }
-        txbuf[0] = MSTAT_END;
+        txbuf[0] = MTS_REPLY_END;
         txbuf[1] = 0;
         txbuf[2] = next_token();
         send_buf(txbuf);
-        wait_token(ready_token);
+        // take it easy here wait_token(ready_token);
     }
     ser_puts("do_catalog() done");
 }
 
 void do_select()
 {
+    extern char * ptrfile;
+
     ser_puts("web do_select():");
     ser_puts(&rxbuf[2]);
     switch (rxbuf[2]) {
@@ -129,9 +133,12 @@ void do_select()
         case 'B':   drvsel[1] = findfileidx(rxbuf+3); solo(1, 0, 2); break;
         case 'R':   drvsel[2] = findfileidx(rxbuf+3); solo(2, 0, 1); break;
     }
-    txbuf[0] = MSTAT_END;
+    txbuf[0] = MTS_REPLY_END;
     txbuf[1] = 0;
     send_buf(txbuf);
+
+    // for the time being, the only file we can select is in ptrfile+10
+    strncpy(ptrfile + 10, rxbuf+3, 13);
 }
 
 int16_t findfileidx(const char * name)
@@ -152,6 +159,8 @@ void solo(uint8_t prio, uint8_t a, uint8_t b)
     if (drvsel[a] == drvsel[prio]) drvsel[a] = -1;
     if (drvsel[b] == drvsel[prio]) drvsel[b] = -1;
 }
+
+volatile uint8_t dummy;
 
 void send_buf(const uint8_t * data)
 {
@@ -189,9 +198,14 @@ uint8_t next_token()
 
 int8_t wait_token(uint8_t token)
 {
+    uint8_t timeout = 64;
     do {
         recv_buf(rxbuf);
-        if (rxbuf[0] == STM_READY && rxbuf[1] == 0) return -1;
+        if ((rxbuf[0] == STM_READY && rxbuf[1] == 0) || --timeout == 0) {
+            return -1;
+        }
+        ser_puts(">tok:"); print_hex(rxbuf[1]);
+        delay1(1);
     } while(! (rxbuf[0] == STM_READY && rxbuf[1] == token));
     return 0;
 }

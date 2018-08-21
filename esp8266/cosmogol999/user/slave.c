@@ -8,6 +8,8 @@
 uint8_t txbuf[32];
 uint8_t rxbuf[32];
 
+volatile uint8_t slave_state;
+
 master_status_t master_status;
 
 void rxdata_kolbask(void * context, uint8_t * buffer, uint8_t len);
@@ -15,27 +17,49 @@ void rxdata_kolbask(void * context, uint8_t * buffer, uint8_t len);
 void ICACHE_FLASH_ATTR
 slave_init()
 {
-    spi_slave_init(32, NULL);
     hspi_rxdata_cb = rxdata_kolbask;
     slave_ready(0);
+    slave_setstate(SLAVE_VOID);
+
+    spi_slave_init(32, NULL);
 }
 
 void ICACHE_FLASH_ATTR
-rxdata_kolbask(void * context, uint8_t * buffer, uint8_t len)
+dump_rxdata()
+{
+    printf("rxdata:");
+    for(int i = 0; i < 16; ++i) {
+        printf("%02x ", rxbuf[i]);
+    }
+    printf("\n");
+}
+
+//void ICACHE_FLASH_ATTR
+void rxdata_kolbask(void * context, uint8_t * buffer, uint8_t len)
 {
     if (len > 32) len = 32;
     memcpy(rxbuf, buffer, len);
 
-//    printf("am polled! %02x %02x %02x %02x\n", rxbuf[0], rxbuf[1], rxbuf[2], rxbuf[3]);
     switch (buffer[0]) {
         case MTS_POLL_USER_COMMAND:
-            master_status = MSTAT_NONE;
+            master_status = MSTAT_POLL;
             break;
         case MTS_REPLY_MORE:
             master_status = MSTAT_MORE;
+            if (slave_state == SLAVE_VOID) {
+                // post dummy response
+                slave_ready(rxbuf[2]);
+                dump_rxdata();
+                printf("void->dummy\n");
+            }
             break;
         case MTS_REPLY_END:
             master_status = MSTAT_END;
+            if (slave_state == SLAVE_VOID) {
+                slave_ready(rxbuf[2]);
+                dump_rxdata();
+                printf("void->dummy\n");
+            }
             break;
         default:
             break;
@@ -81,4 +105,9 @@ void ICACHE_FLASH_ATTR slave_ready(uint8_t token)
 {
     uint8_t seq[] = {STM_READY, token};
     spi_slave_set_data(seq, 2);
+}
+
+void ICACHE_FLASH_ATTR slave_setstate(uint8_t state)
+{
+    slave_state = state;
 }

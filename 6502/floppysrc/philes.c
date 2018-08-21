@@ -70,7 +70,7 @@ FRESULT philes_nextfile(char *filename, uint8_t terminate) {
             if (endsWith(finfo.fname, ".FDD")) {
                 if (filename != 0) {
                     if (terminate) {
-                        strncpy(filename, finfo.fname, 12);
+                        strncpy(filename, finfo.fname, 13);
                     } else {
                         strxcpy(filename, finfo.fname);
                     }

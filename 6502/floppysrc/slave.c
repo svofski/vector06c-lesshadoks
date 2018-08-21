@@ -56,7 +56,7 @@
 FDDImage fddimage;
 FIL	file1;
 
-#define DELAY_RELOAD 128
+#define DELAY_RELOAD 255 //128
 
 uint8_t blink(void);
 uint8_t slave(void);

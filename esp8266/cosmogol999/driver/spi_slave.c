@@ -41,18 +41,6 @@ spi_slave_init(uint8_t data_len, void * context)
 
     WRITE_PERI_REG(SPI_CLOCK(HSPI), 0);
 
-// this does not work
-//    SET_PERI_REG_MASK(SPI_SLAVE1(HSPI),  
-//            ((data_bit_len&SPI_SLV_BUF_BITLEN)<< SPI_SLV_BUF_BITLEN_S)|
-//            ((0x7&SPI_SLV_STATUS_BITLEN)<<SPI_SLV_STATUS_BITLEN_S)|
-//            ((0x7&SPI_SLV_WR_ADDR_BITLEN)<<SPI_SLV_WR_ADDR_BITLEN_S)|
-//            ((0x7&SPI_SLV_RD_ADDR_BITLEN)<<SPI_SLV_RD_ADDR_BITLEN_S));
-
-// this seems to work better, except that at this link it's all wrong
-// https://bbs.espressif.com/viewtopic.php?f=7&t=2727
-
-
-
     // (SPILCOMMAND), seems to be command length = 8-1
     //SET_PERI_REG_BITS(SPI_USER2(HSPI), SPI_USR_COMMAND_BITLEN,
     //        7, SPI_USR_COMMAND_BITLEN_S);
@@ -124,7 +112,11 @@ void spi_slave_isr_handler(void *para)
         // there is no explanation why this must be done
         // if it is done like so, unless there is a delay, 
         // subsequent transaction will be ruined
-        // SET_PERI_REG_MASK(SPI_SLAVE(HSPI), SPI_SYNC_RESET); // reset
+        //if (status & SPI_SLV_WR_BUF_DONE) {
+        // removing this used to work on arduino testbench but fails on the real
+        // thing not sure why
+        //    SET_PERI_REG_MASK(SPI_SLAVE(HSPI), SPI_SYNC_RESET); // reset
+        //}
 
         CLEAR_PERI_REG_MASK(SPI_SLAVE(HSPI),    // clear interrupt flags
                 SPI_TRANS_DONE|
@@ -161,6 +153,7 @@ void spi_slave_isr_handler(void *para)
 
             if (hspi_rxdata_cb) {
                 hspi_rxdata_cb(para, buffer, 32);
+                //os_delay_us(150); // fml
             }
         }
     }

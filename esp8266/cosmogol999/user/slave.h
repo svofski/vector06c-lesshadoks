@@ -23,7 +23,12 @@ typedef enum _mastercall {
     MSTAT_NONE = 0,
     MSTAT_MORE = 1,     // expect more data
     MSTAT_END = 2,      // data end
+    MSTAT_POLL = 3,
 } master_status_t;
+
+#define SLAVE_VOID      0   // not ready to accept a response
+#define SLAVE_CATALOG   1
+#define SLAVE_SELECT    2
 
 typedef void (*slave_rxdata_cb_t)(uint8_t *, size_t, void *);
 
@@ -32,3 +37,4 @@ void slave_post_user_command(stm_t cmd, const uint8_t * data, uint8_t len);
 master_status_t slave_poll_response(uint8_t ** data, uint8_t * len, uint8_t *tk);
 
 void slave_ready(uint8_t token);
+void slave_setstate(uint8_t state);

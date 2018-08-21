@@ -139,6 +139,13 @@ ICACHE_FLASH_ATTR void setup_rboot()
     }
 }
 
+LOCAL os_timer_t spislave_timer;
+LOCAL void ICACHE_FLASH_ATTR spislave_init(void *arg)
+{
+    os_timer_disarm(&spislave_timer);
+    slave_init();
+}
+
 //Main routine. Initialize stdout, the I/O, filesystem and the webserver and we're done.
 ICACHE_FLASH_ATTR void user_init(void) {
     stdoutInit();
@@ -162,7 +169,9 @@ ICACHE_FLASH_ATTR void user_init(void) {
     wifi_set_sleep_type(NONE_SLEEP_T);
     system_phy_set_max_tpw(1);
 
-    slave_init();
+    os_timer_disarm(&spislave_timer); 
+    os_timer_setfn(&spislave_timer, (os_timer_func_t *) spislave_init, NULL);
+    os_timer_arm(&spislave_timer, 2500, 0);
 
     printf("\nuser_init() done\n");
 }

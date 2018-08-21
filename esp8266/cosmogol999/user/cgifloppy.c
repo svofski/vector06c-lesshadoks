@@ -10,30 +10,13 @@
 
 static void master_dir(HttpdConnData * con);
 
-//int ICACHE_FLASH_ATTR 
-//tplFloppyMain(HttpdConnData *connData, char *token, void **arg) 
-//{
-//    char buff[128];
-//    if (token==NULL) return HTTPD_CGI_DONE;
-//
-//    strcpy(buff, "Unknown");
-//    if (strcmp(token, "spiffs_size") == 0) {
-//        strncpy(buff, "bloody much", sizeof(buff));
-//    } else if (strcmp(token, "mount_status") == 0) {
-//        strncpy(buff, mount_msg, sizeof(buff));
-//    } else if (strcmp(token, "directory") == 0) {
-//        return spiffs_dir(connData);
-//    }
-//    httpdSend(connData, buff, -1);
-//    return HTTPD_CGI_DONE;
-//}
-
-
 int ICACHE_FLASH_ATTR cgiFloppyCatalog(HttpdConnData *connData) {
     if (connData->conn==NULL) {
         //Connection aborted. Clean up.
         return HTTPD_CGI_DONE;
     }
+
+    slave_setstate(SLAVE_CATALOG);
 
     printf("cgiFloppyCatalog: requesting catalog\n");
     httpdStartResponse(connData, 200);
@@ -43,6 +26,8 @@ int ICACHE_FLASH_ATTR cgiFloppyCatalog(HttpdConnData *connData) {
     master_dir(connData);
 
     printf("cgiFloppyCatalog: catalog done\n");
+
+    slave_setstate(SLAVE_VOID);
     
     return HTTPD_CGI_DONE;
 }
@@ -61,33 +46,41 @@ void ICACHE_FLASH_ATTR master_dir(HttpdConnData * con)
     uint32_t start = system_get_time();
 
     int ntimeouts = 0;
+    int npolls = 0;
 
     master_status_t ms;
+    int comma = 0;
     do {
         uint8_t * data; 
         uint8_t len;
         uint8_t token;
         ms = slave_poll_response(&data, &len, &token);
 
+        if (ms == MSTAT_POLL) {
+            printf("unexpected mts_poll %d\n", ++npolls);
+            if (npolls > 10) break;
+        }
+
         system_soft_wdt_feed();
         if (len > 0) {
             start = system_get_time();
 
             printf("DATA: %d %s %02x\n", len, data, token);
-            httpdSend(con, "\"", 1);
+
+            httpdSend(con, comma ? ",\"" : "\"", -1);
             httpdSend(con, (char *)data, len);
             httpdSend(con, "\"", 1);
-            if (ms == MSTAT_MORE) {
-                httpdSend(con, ",", 1);
-            }
-
             slave_ready(token);
+            ++comma;
         }
 
         if (system_get_time() - start > 500000) {
+            start = system_get_time();
             printf("TIMEOUT\n");
-            slave_ready(0);
-            if (++ntimeouts > 8) break;
+            //slave_ready(0);
+            ++ntimeouts;
+            //if (ntimeouts == 4) slave_ready(0);
+            //if (++ntimeouts > 8) break;
         }
     } while (ms != MSTAT_END);
     system_soft_wdt_restart();
@@ -112,6 +105,8 @@ int ICACHE_FLASH_ATTR cgiFloppySelect(HttpdConnData *connData) {
         return HTTPD_CGI_DONE;
     }
 
+    slave_setstate(SLAVE_SELECT);
+
     printf("cgiFloppySelect\n");
     httpdStartResponse(connData, 200);
     httpdHeader(connData, "Content-Type", "text/plain");
@@ -130,6 +125,8 @@ int ICACHE_FLASH_ATTR cgiFloppySelect(HttpdConnData *connData) {
     printf("waiting for mts_end\n");
     wait_mts_end();
     printf("okay!\n");
+
+    slave_setstate(SLAVE_VOID);
 
     return HTTPD_CGI_DONE;
 }
