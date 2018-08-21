@@ -36,7 +36,7 @@ module lesshadoks_top(
 	
 	input		BUTT1,
 	
-	output		ESP_SS_N,
+	output		ESP_SS_N,		// ESP8266 GPIO15
 	input		ESP_RXD,
 	output		ESP_TXD,
 	
@@ -338,6 +338,7 @@ floppy floppy0(
     .sd_cmd(SPI_MOSI),      // sd card signals
     .sd_clk(SPI_CLK),       // sd card signals
     .uart_txd(ESP_TXD),     // uart tx pin
+    .esp_ss_n(ESP_SS_N),    // esp8266 slave select
     
     // I/O interface to host system (Vector-06C)
     .hostio_addr(fdc_adrs),

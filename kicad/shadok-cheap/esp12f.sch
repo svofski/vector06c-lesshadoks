@@ -353,7 +353,7 @@ L device:R_Pack04 RN502
 U 1 1 5ABFDCB1
 P 9900 2650
 F 0 "RN502" V 9550 2600 50  0000 C CNN
-F 1 "10K" V 9550 2350 50  0000 C CNN
+F 1 "3K3" V 9550 2350 50  0000 C CNN
 F 2 "Resistors_SMD:R_Array_Concave_4x0603" V 10175 2650 50  0001 C CNN
 F 3 "" H 9900 2650 50  0001 C CNN
 	1    9900 2650
@@ -428,6 +428,6 @@ Wire Wire Line
 Connection ~ 10150 2750
 Wire Wire Line
 	10150 2750 10300 2750
-Text Notes 10150 3200 0    50   ~ 0
-10K pulldown on GPIO15\nshould be enough, but \nsomehow it isn't.\nBodge R502 to enable boot.
+Text Notes 10200 3250 0    50   ~ 0
+10K pulldown on GPIO15\nshould be enough, but \nsomehow it isn't.\nIf RN502=10K, bodge \nR502 to enable boot.
 $EndSCHEMATC

@@ -1496,6 +1496,8 @@ Wire Notes Line
 	10500 6500 10500 5300
 Wire Notes Line
 	10500 5300 8600 5300
+Text Notes 9750 6450 0    50   ~ 0
+BODGE IN REV 1
 Wire Bus Line
 	5250 3650 5250 4350
 Wire Bus Line
@@ -1506,6 +1508,4 @@ Wire Bus Line
 	4300 4350 4300 5550
 Wire Bus Line
 	1500 4850 1500 5650
-Text Notes 9750 6450 0    50   ~ 0
-BODGE IN REV 1
 $EndSCHEMATC

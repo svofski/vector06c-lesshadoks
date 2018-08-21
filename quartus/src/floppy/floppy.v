@@ -28,6 +28,7 @@ module floppy(
     output              sd_cmd,     // sd card signals
     output              sd_clk,     // sd card signals
     output              uart_txd,   // uart tx pin
+    output  reg         esp_ss_n,   // esp12f slave select (GPIO15, electrically pulled down)
     
     // I/O interface to host system (Vector-06C)
     input       [2:0]   hostio_addr,
@@ -253,6 +254,7 @@ always @(posedge clk or negedge reset_n) begin
         uart_state <= 3;
         uart_send <= 0;
         sd_dat3 <= 1;
+	esp_ss_n <= 1;
         sdram_page <= 0;
     end else begin
         if (ce) begin
@@ -270,6 +272,7 @@ always @(posedge clk or negedge reset_n) begin
                 // MMCA: SD/MMC card chip select
                 if (cpu_a[7:0] == PORT_MMCA) begin
                     sd_dat3 <= cpu_do[0];
+		    esp_ss_n <= cpu_do[1];
                 end
                 
                 // CPU status return
@@ -375,7 +378,8 @@ spi sd0(.clk(clk),
         .di(dma_ready ? cpu_do : dma_spido), 
         .wr(spi_wren), 
         .do(spdr_do), 
-        .dsr(spdr_dsr)
+        .dsr(spdr_dsr),
+	.slow(~esp_ss_n)
         );
 
 reg  [7:0]  dma_lsb, dma_msb;
