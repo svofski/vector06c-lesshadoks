@@ -29,10 +29,9 @@
 #include "timer.h"
 #include "config.h"
 #include "slave.h"
-
 #include "osd.h"
-
 #include "philes.h"
+#include "bootes.h"
 
 char* cnotice1 = "LES SHADOKS POMPAIENT FOR VECTOR-06C";
 char* cnotice2 = "(C)2008-2018  VIACHESLAV SLAVINSKY";
@@ -106,6 +105,8 @@ void main(void) {
     ser_nl(); 
 
     sdram_probe();
+
+    load_boot();
 
     thrall(ptrfile, Buffer);
     print_result(result);
