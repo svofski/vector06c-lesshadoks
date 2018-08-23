@@ -61,7 +61,7 @@ module lesshadoks_top(
 	input		VU_STACK,		//  ВУ  СТЕК
 	input		VU_STROB_SOST, 		//  ВУ  СТРОБ.СОСТ	
 	
-	input		VU_RESET,		//  ВУ ~СБРОС (41)
+	input		VU_RESET,		//  ВУ ~ВВОД СИСТЕМЫ (39) 
 	input		FREE_IO2,
 
 	output 	[7:0]	virt_kvaz_control_word
@@ -79,7 +79,7 @@ assign virt_kvaz_control_word = {floppy_sdram_busy, ~VU_ZPVV_N & (shavv_r==8'h1)
 wire sys_reset;
 reset_debouncer reset_debouncer(.clk(clk_cpu), 
 	.butt_n(BUTT1), 
-	.vu_reset(0), //VU_RESET),  // sys_reset от БЛК+СБР получается деструктивно
+	.vu_reset(VU_RESET),  // sys_reset от БЛК+СБР получается деструктивно
 	.reset_o(sys_reset));	
 
 // --------------
