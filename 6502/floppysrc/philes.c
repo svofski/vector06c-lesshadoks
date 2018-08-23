@@ -67,7 +67,7 @@ FRESULT philes_nextfile(char *filename, uint8_t terminate) {
         if (finfo.fattrib & AM_DIR) {
             // nowai
         } else {
-            if (endsWith(finfo.fname, ".FDD")) {
+            if (endsWith(finfo.fname, ".FDD") || endsWith(finfo.fname, ".BIN")){
                 if (filename != 0) {
                     if (terminate) {
                         strncpy(filename, finfo.fname, 13);

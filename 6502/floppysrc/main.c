@@ -106,6 +106,9 @@ void main(void) {
 
     sdram_probe();
 
+    // delay so that the original boot has time to cough up, 
+    // it gets messy otherwise (make it civil and coroutine-ish later)
+    delay2(50);
     load_boot();
 
     thrall(ptrfile, Buffer);
