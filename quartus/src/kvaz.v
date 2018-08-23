@@ -1,7 +1,6 @@
 // ====================================================================
-//                       VECTOR-06C FPGA REPLICA
-//
-// 		Copyright (C) 2007, Viacheslav Slavinsky
+// VECTOR-06C FPGA REPLICA Copyright (C) 2007 Viacheslav Slavinsky
+// LES SHADOKS POMPAIENT Copyright (C) 2018 Viacheslav Slavinsky
 //
 // This core is distributed under modified BSD license. 
 // For complete licensing information see LICENSE.TXT.
@@ -30,8 +29,11 @@ module kvaz(
 	input select,
 	input [7:0] data_in,
 	input stack, 
+	input boot,
 	input memwr, 
 	input memrd,
+	input iord,
+	input iowr,
 	output reg[2:0] bigram_addr,
 	output blk_n,
 	output [7:0] debug);
@@ -58,6 +60,9 @@ wire		cr_ram_on	= control_reg[5];
 
 wire [3:0] adsel = shavv[7:4];
 
+wire boot_not = memwr | iord | iowr;
+wire boot_sel = boot & ~shavv[7] & ~boot_not; // overlay bootrom
+
 wire addr_sel = adsel == 4'hA | adsel == 4'hB | adsel == 4'hC | adsel == 4'hD | 	// standard KVAZ
 	((adsel==4'h8)|(adsel==4'h9)&&(control_reg[6]==1))|((adsel==4'hE)|(adsel==4'hF)&&(control_reg[7]==1)); //Barkar
 
@@ -65,10 +70,10 @@ wire ram_sel = cr_ram_on & addr_sel;
 
 wire stack_sel = cr_stack_on & stack;
 
-assign blk_n = ~((cr_ram_on & addr_sel) | (cr_stack_on & stack));
+assign blk_n = ~((cr_ram_on & addr_sel) | (cr_stack_on & stack) | boot_sel);
 
 always @* begin
-	bigram_addr <= stack_sel ? cr_stack_page : ram_sel ? cr_ram_page : 3'b000;
+	bigram_addr <= stack_sel ? cr_stack_page : ram_sel ? cr_ram_page : boot_sel ? 3'b000 : 3'b000; // todo: boot_sel -> 3'b100
 end	
 
 endmodule

@@ -159,7 +159,7 @@ set_location_assignment PIN_85 -to VU_STROB_SOST
 set_location_assignment PIN_99 -to ADC_SND
 set_location_assignment PIN_98 -to "ADC_SND(n)"
 set_location_assignment PIN_87 -to ADC_SNDINT
-set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_NETLIST_TYPE POST_FIT -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to DRAM_ADDR
@@ -228,5 +228,5 @@ set_global_assignment -name SIGNALTAP_FILE stp1.stp
 set_global_assignment -name QIP_FILE src/memories/testram.qip
 set_global_assignment -name SDC_FILE pompaient.out.sdc
 set_global_assignment -name SDC_FILE pompaient.sdc
-set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
 set_global_assignment -name SLD_FILE db/stp1_auto_stripped.stp
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

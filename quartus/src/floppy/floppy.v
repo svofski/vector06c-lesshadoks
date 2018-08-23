@@ -63,7 +63,6 @@ module floppy(
     output              host_hold,
 
     output  reg         fakerom_en,     // enable kvaz in low ram
-    input               fakerom_reset,  // clear fakerom_en (from ruslat)
     
     output      [3:0]   vg93debug
 );
@@ -96,7 +95,7 @@ parameter PORT_LED = 16;
 parameter PORT_OSD_COMMAND = 17;        // {F11,F12,HOLD}
 
 parameter PORT_SDRAM_PAGE = 18;
-parameter PORT_FAKEROM = 19;
+parameter PORT_FAKEROM = 8'h13;
 
 //assign addr = cpu_a;
 //assign odata = cpu_do;
@@ -305,7 +304,6 @@ always @(posedge clk or negedge reset_n) begin
             end
             else begin
                 dma_blocks <= 4'h0;
-                if (fakerom_reset) fakerom_en <= 0;
             end 
 
             // uart state machine

@@ -73,11 +73,13 @@ reg [7:0] strobdelay;
 always @(posedge clk_cpu)
 	strobdelay <= {strobdelay[6:0], VU_STROB_SOST};
 	
-assign virt_kvaz_control_word = {floppy_sdram_busy, ramc_write, ramc_read, kvaz_memrd_flag};//vg93debug;
+assign virt_kvaz_control_word = {floppy_sdram_busy, ~VU_ZPVV_N & (shavv_r==8'h1), ramc_read, kvaz_memrd_flag};//vg93debug;
 
 wire sys_reset;
-reset_debouncer reset_debouncer(.clk(clk_cpu), .butt_n(BUTT1), 
-	.vu_reset(VU_RESET), .reset_o(sys_reset));	
+reset_debouncer reset_debouncer(.clk(clk_cpu), 
+	.butt_n(BUTT1), 
+	.vu_reset(0), //VU_RESET),  // sys_reset от БЛК+СБР получается деструктивно
+	.reset_o(sys_reset));	
 
 // --------------
 // CLOCK SECTION
@@ -108,7 +110,8 @@ wire cras_n, ccas_n, cstack, cstrob_sost;
 wire cchtzu_n, cchtvv_n;
 wire [7:0] shavv_r;
 
-bus_sampler busync(.clk(clk_cpu), .reset(sys_reset),
+bus_sampler busync(.clk(clk_cpu), 
+	.reset(sys_reset),
 	.VU_RAS_N(VU_RAS_N), .VU_CAS_N(VU_CAS_N), .VU_ZPZU_N(VU_ZPZU_N),
 	.VU_CHTZU_N(VU_CHTZU_N), .VU_ZPVV_N(VU_ZPVV_N), .VU_CHTVV_N(VU_CHTVV_N),
 	.VU_STACK(VU_STACK), .VU_STROB_SOST(VU_STROB_SOST), 
@@ -132,10 +135,6 @@ wire 		ramdisk_control_write = (shavv_r == 8'h10) && negedge_zpvv_n;
 wire [7:0]  	kvaz_debug;
 wire 		kvaz_memwr = (~VU_BLK_N) & negedge_zpzu_n;
 
-//wire 		kvaz_do_e = ~(VU_BLK_N | (cchtzu_n & cchtvv_n));
-//assign 		VU_SHD = kvaz_do_e ? kvaz_do : 8'bzzzzzzzz;
-//assign 		VU_DIR_N = ~kvaz_do_e;
-
 wire [7:0]	iodev_do = fdc_sel ? fdc_do :
 			   sound_sel ? sound_do : 8'hff;
 
@@ -158,12 +157,22 @@ assign 		VU_SHD = kvaz_do_e ? kvaz_do :
 parameter KVAZ_MEMRD_S0 = 0, KVAZ_MEMRD_S1 = 1, KVAZ_MEMRD_S2 = 2, KVAZ_MEMRD_S3 = 3;
 reg [2:0] kvaz_memrd_state;
 
-reg 	  memrd_psw;
+reg [7:0] psw;
+wire 		psw_inp = psw[6];
+wire		psw_out = psw[4];
+wire		psw_wo_n = psw[1];
+wire		psw_memr = psw[7];
+
+reg	  memrd_psw;
 always @(posedge clk_cpu or posedge sys_reset)
-	if (sys_reset)
+	if (sys_reset) begin
 		memrd_psw <= 1'b0;
-	else if (posedge_strob_sost)
+		psw <= 8'h00;
+	end
+	else if (posedge_strob_sost) begin
 		memrd_psw <= VU_SHD[7];
+		psw <= VU_SHD;
+	end
 	else if (kvaz_memrd_state == KVAZ_MEMRD_S3)
 		memrd_psw <= 1'b0;
 	
@@ -197,17 +206,18 @@ always @(posedge clk_cpu or posedge sys_reset) begin: _kvaz_memrd_sync
 	endcase
 end
 
-wire kvaz_memrd = kvaz_memrd_state == KVAZ_MEMRD_S3;
+wire kvaz_enable_fakerom;	// <- fakerom_controller <- floppy
 
+wire kvaz_memrd = kvaz_memrd_state == KVAZ_MEMRD_S3;
 wire [15:0] 	decoded_a;
 wire	  	decoded_a_valid;
+wire at_zero = decoded_a_valid && decoded_a == 0;
 shap_decoder address_decoder(.clk(clk_cpu), .reset(sys_reset), 
 	.negedge_ras_n(negedge_ras_n), .negedge_cas_n(negedge_cas_n),
 	.clean_ras_n(cras_n), .clean_cas_n(ccas_n), .VU_SHAP_N(VU_SHAP_N),
 	.decoded_a(decoded_a), .valid(decoded_a_valid));
 
 	
-
 kvaz ramdisk(
     .clk(clk_cpu),
     .clke(ce_cpu), 
@@ -217,8 +227,13 @@ kvaz ramdisk(
     .select(ramdisk_control_write),
     .data_in(VU_SHD),
     .stack(cstack), 
-    .memwr(kvaz_memwr), 		// todo: not used in kvaz module
-    .memrd(kvaz_memrd), 		// todo: not used in kvaz module
+    
+    .boot(kvaz_enable_fakerom),
+    .memrd(memrd_psw),    
+    .memwr(~psw_wo_n),
+    .iord(psw_inp),
+    .iowr(psw_out),
+    
     .bigram_addr(kvaz_page),
     .blk_n(kvaz_blk_n),
     .debug(kvaz_debug)
@@ -273,6 +288,11 @@ soundinterfaces soundinterfaces(.clk(clk_cpu), .reset(sys_reset),
 	.shavv(shavv_r), .data(VU_SHD), .data_o(sound_do), 
 	.negedge_zpvv_n(negedge_zpvv_n), .negedge_chtvv_n(negedge_chtvv_n),
 	.audio_l(AUDIO_L), .audio_r(AUDIO_R));
+	
+wire ruslat;
+ioports_spy iospy0(.clk(clk_cpu), .reset(sys_reset),
+	.shavv(shavv_r), .data(VU_SHD), .negedge_zpvv_n(negedge_zpvv_n),
+	.ruslat_o(ruslat));
 
 // когда вообще не страшно лезть в SDRAM
 wire sdram_free_access_slot = posedge_ras_n & ccas_n & VU_BLK_N;
@@ -324,6 +344,7 @@ wire 		fdc_wr = fdc_sel & negedge_zpvv_n;
 wire		fdc_rd = fdc_sel & negedge_chtvv_n;
 wire	[3:0]	fdc_adrs = {shavv_r[2],~shavv_r[1:0]};
 wire	[7:0]	fdc_do;
+wire 		fdc_boot_loaded;
 
 
 wire [3:0] vg93debug;
@@ -331,7 +352,8 @@ wire [3:0] vg93debug;
 floppy floppy0(
     .clk(clk_cpu),
     .ce(1'b1),
-    .reset_n(1),//~sys_reset),
+    //.reset_n(1),//~sys_reset),
+    .reset_n(~sys_reset),   // БЛК+ВВОД надо провести отдельно для начальной установки fakerom
 
     .sd_dat(SPI_MISO),      // sd card signals
     .sd_dat3(SD_SS_N),      // sd card signals
@@ -346,6 +368,8 @@ floppy floppy0(
     .hostio_odata(fdc_do),
     .hostio_rd(fdc_rd),
     .hostio_wr(fdc_wr),
+    
+    .fakerom_en(fdc_boot_loaded), // turn on fake bootrom at $0000
 
 //    // path to SDRAM
     .sdram_addr(floppy_sdram_addr),
@@ -359,12 +383,81 @@ floppy floppy0(
     .keyboard_keys(keyboard_keys)// {reserved,left,right,up,down,enter}
     ,.vg93debug(vg93debug)
 );
-	
-	
+
+fakerom_controller fakeromctrl(.clk(clk_cpu), 
+	//.reset(sys_reset), 
+	.reset(0), 
+	.boot_loaded(fdc_boot_loaded), .ruslat(ruslat), 
+	.enable_fakerom(kvaz_enable_fakerom));		
 	
 endmodule
 
 
+module fakerom_controller(input clk, input reset, input boot_loaded, input ruslat, output enable_fakerom);
+
+reg boot_loaded_r;
+reg ruslat_r;
+
+reg [3:0] state;
+reg [3:0] ruslat_cnt;
+
+localparam STATE_DISABLED = 0, STATE_ENABLED = 1;
+
+assign enable_fakerom = state == STATE_ENABLED;
+
+always @(posedge clk or posedge reset) begin: _sampler
+	if (reset) begin
+		boot_loaded_r <= 0;
+		ruslat_r <= 0;
+	end 
+	else begin
+		boot_loaded_r <= boot_loaded;
+		ruslat_r <= ruslat;
+	end
+end
+
+always @(posedge clk or posedge reset) begin: _fsm
+	if (reset) 
+		state <= STATE_DISABLED;
+	else 
+		case (state)
+		STATE_DISABLED:	if (~boot_loaded_r & boot_loaded) state <= STATE_ENABLED;
+		STATE_ENABLED: 	if (ruslat_cnt == 4) state <= STATE_DISABLED;
+		endcase
+end
+
+// ruslat blink counter, enabled in fakerom state
+always @(posedge clk or posedge reset) begin: _cnt
+	if (reset)
+		ruslat_cnt <= 0;
+	else 
+	case (state) 
+	STATE_DISABLED: ruslat_cnt <= 0;
+	STATE_ENABLED: 	if (ruslat_r & ~ruslat) ruslat_cnt <= ruslat_cnt + 1'b1;
+	endcase
+end
+
+endmodule
+
+
+module ioports_spy(input clk, input reset, input [7:0] shavv,
+	input [7:0] data, input negedge_zpvv_n,
+	output reg ruslat_o);
+	
+	
+wire pc_sel = shavv == 8'h01;
+wire cw_sel = shavv == 8'h00;
+	
+always @(posedge clk or posedge reset)
+	if (reset) begin
+		ruslat_o <= 1'b0;
+	end
+	else begin
+		//if (negedge_zpvv_n & pc_sel) ruslat_o <= data[3];
+		// загрузчик щелкает портом Ц в режиме BSR
+		if (negedge_zpvv_n & cw_sel & (data[2:1]==2'b11)) ruslat_o <= data[0];
+	end		
+endmodule
 
 
 module reset_debouncer(input clk, input butt_n, input vu_reset, output reset_o);
