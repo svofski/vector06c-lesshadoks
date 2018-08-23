@@ -73,13 +73,46 @@ assign rs_soundB=8'b0;
 assign rs_soundC=8'b0;
 `endif
 
+
+////////////////////////////////
+// 580VI53 timer: ports 08-0B //
+////////////////////////////////
+wire            vi53_sel = shavv[7:2] == 6'b000010;
+wire            vi53_wren = vi53_sel & negedge_zpvv_n;
+wire            vi53_rden = 1'b0;
+
+wire    [2:0]   vi53_out;
+wire    [7:0]   vi53_odata;
+
+reg [3:0] vi53cectr;
+always @(posedge clk)
+	vi53cectr <= vi53cectr + 1'b1;
+
+wire vi53_timer_ce = &vi53cectr;
+
+`ifdef WITH_VI53
+pit8253 vi53(
+            clk, 
+            1'b1, 
+            vi53_timer_ce, 
+            {~shavv[1],~shavv[0]}, 
+            vi53_wren, 
+            vi53_rden, 
+            data,
+            vi53_odata, 
+            3'b111, 
+            vi53_out);
+`endif
+
+
+
 wire [7:0] CovoxData = 0;
 wire tape_input = 0;
 wire audio_pwm;
 
 soundcodec soundnik(
                     .clk24(clk),
-                    .pulses(0),//{vv55int_pc_out[0],vi53_out}), 
+                    .pulses({/*vv55int_pc_out[0]*/1'b0,vi53_out}), 
                     .ay_soundA(ay_soundA),  //
                     .ay_soundB(ay_soundB),  //
                     .ay_soundC(ay_soundC),  //

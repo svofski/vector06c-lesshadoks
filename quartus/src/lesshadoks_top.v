@@ -11,6 +11,7 @@
 
 `define SDRAM_TRU
 `define WITH_AY
+`define WITH_VI53
 
 module lesshadoks_top(
 	input		CLK50, 

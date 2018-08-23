@@ -221,6 +221,7 @@ set_global_assignment -name VHDL_FILE src/zpu/zpu_core_flex.vhd
 set_global_assignment -name VHDL_FILE src/ay/ym2149.vhd
 set_global_assignment -name VERILOG_FILE src/ay/ayglue.v
 set_global_assignment -name VHDL_FILE src/ay/ay8910.vhd
+set_global_assignment -name VERILOG_FILE src/ay/8253.v
 set_global_assignment -name QIP_FILE src/clocks/reloj.qip
 set_global_assignment -name CDF_FILE Chain1.cdf
 set_global_assignment -name QIP_FILE src/memories/testrom.qip
