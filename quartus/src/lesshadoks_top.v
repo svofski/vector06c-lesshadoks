@@ -74,7 +74,7 @@ reg [7:0] strobdelay;
 always @(posedge clk_cpu)
 	strobdelay <= {strobdelay[6:0], VU_STROB_SOST};
 	
-assign virt_kvaz_control_word = {floppy_sdram_busy, ~VU_ZPVV_N & (shavv_r==8'h1), ramc_read, kvaz_memrd_flag};//vg93debug;
+assign virt_kvaz_control_word = {floppy_sdram_busy, ~VU_ZPVV_N & (shavv_r==8'h1), ramc_read, kvaz_memrd_flag};
 
 wire sys_reset;
 reset_debouncer reset_debouncer(.clk(clk_cpu), 
@@ -137,14 +137,15 @@ wire [7:0]  	kvaz_debug;
 wire 		kvaz_memwr = (~VU_BLK_N) & negedge_zpzu_n;
 
 wire [7:0]	iodev_do = fdc_sel ? fdc_do :
-			   sound_sel ? sound_do : 8'hff;
+			   sound_sel ? sound_do : 
+                           joy_sel ? joy_do : 8'hff;
 
 wire		iodev_do_e = ~(iodev_blk_n | cchtvv_n);
 wire		kvaz_do_e = ~(kvaz_blk_n | cchtzu_n);
 wire 		vu_shd_oe = iodev_do_e | kvaz_do_e;
 wire		kvaz_blk_n;
 
-wire		iodev_blk_n = ~(fdc_sel & ~cchtvv_n);
+wire		iodev_blk_n = ~((fdc_sel | joy_sel) & ~cchtvv_n);
 
 assign 		VU_BLK_N = kvaz_blk_n & iodev_blk_n;
 assign 		VU_DIR_N = ~vu_shd_oe;
@@ -337,8 +338,6 @@ wire        floppy_sdram_read;
 wire        floppy_sdram_write;
 wire        floppy_sdram_busy;
 
-wire    [5:0]   keyboard_keys = 0;
-
 // ports 18..1b, 1c
 wire		fdc_sel = shavv_r[7:3] == 5'b00011; // crude, low trib should be 000,001,010,011,100 not 101,110,111
 wire 		fdc_wr = fdc_sel & negedge_zpvv_n;
@@ -347,8 +346,13 @@ wire	[3:0]	fdc_adrs = {shavv_r[2],~shavv_r[1:0]};
 wire	[7:0]	fdc_do;
 wire 		fdc_boot_loaded;
 
-
-wire [3:0] vg93debug;
+// joysticks, read-only ports
+wire    [7:0]   fdc_player1;
+wire    [7:0]   fdc_player2;
+wire            joy1_sel = (shavv_r == 8'h0e) & ~cchtvv_n;
+wire            joy2_sel = (shavv_r == 8'h0f) & ~cchtvv_n;
+wire            joy_sel = joy1_sel | joy2_sel;
+wire    [7:0]   joy_do = joy1_sel ? fdc_player1 : joy2_sel ? fdc_player2 : 8'hff;
 
 floppy floppy0(
     .clk(clk_cpu),
@@ -362,6 +366,7 @@ floppy floppy0(
     .sd_clk(SPI_CLK),       // sd card signals
     .uart_txd(ESP_TXD),     // uart tx pin
     .esp_ss_n(ESP_SS_N),    // esp8266 slave select
+    .joy_ss_n(JOY_SS_N),    // mcp23s17 slave select
     
     // I/O interface to host system (Vector-06C)
     .hostio_addr(fdc_adrs),
@@ -372,17 +377,17 @@ floppy floppy0(
     
     .fakerom_en(fdc_boot_loaded), // turn on fake bootrom at $0000
 
-//    // path to SDRAM
+    // path to SDRAM
     .sdram_addr(floppy_sdram_addr),
     .sdram_data_o(floppy_sdram_do),
     .sdram_data_i(floppy_sdram_di),
     .sdram_read(floppy_sdram_read),
     .sdram_write(floppy_sdram_write),
     .sdram_busy(floppy_sdram_busy),
-    
-    // keyboard interface
-    .keyboard_keys(keyboard_keys)// {reserved,left,right,up,down,enter}
-    ,.vg93debug(vg93debug)
+
+    // joysticks polled by SoC
+    .player1(fdc_player1),
+    .player2(fdc_player2)
 );
 
 fakerom_controller fakeromctrl(.clk(clk_cpu), 

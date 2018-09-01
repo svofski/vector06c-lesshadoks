@@ -115,8 +115,8 @@ void ICACHE_FLASH_ATTR wifiInit()
 {
     wifi_set_opmode_current(STATION_MODE);
     struct station_config sc;
-    strcpy((char *)sc.ssid, "svo");
-    strcpy((char *)sc.password, "duddaboo123");
+    strcpy((char *)sc.ssid, "shadki-ap");
+    strcpy((char *)sc.password, "jepompedoncjesuis");
     wifi_station_set_config(&sc); 
 }
 #endif

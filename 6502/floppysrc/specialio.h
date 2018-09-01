@@ -48,6 +48,9 @@
 #define     IOPORT_SDRAM_PAGE   0x12            /* 32 kb page number */
 #define     IOPORT_FAKEROM      0x13            /* bit 0: fake rom at 0 */
 
+#define     IOPORT_PLAYER1      0x14            /* player 1 joystick */
+#define     IOPORT_PLAYER2      0x15            /* player 2 joystick */
+
 #define     DISPLAY_BASE        0xE100
 #define     DISPLAY_W           32
 #define     DISPLAY_H           8
@@ -80,6 +83,10 @@
 #define     SDRAM_PAGE  (*((unsigned char *)(IOPORT_BASE+IOPORT_SDRAM_PAGE)))
 #define     FAKEROM     (*((unsigned char *)(IOPORT_BASE+IOPORT_FAKEROM)))
 
+#define     PLAYER1     (*((unsigned char *)(IOPORT_BASE+IOPORT_PLAYER1)))
+#define     PLAYER2     (*((unsigned char *)(IOPORT_BASE+IOPORT_PLAYER2)))
+
+
 #define SOCKWP      0x20            /* Write protect switch (PB5) */
 #define SOCKINS     0x10            /* Card detect switch (PB4) */
 
@@ -93,12 +100,16 @@
 // MMC_A bits
 #define     MMC_DAT3    (1<<0)
 #define     CS_ESP8266  (1<<1)
+#define     CS_JOY      (1<<2)
 
 #define SELECT()    MMC_A &= ~MMC_DAT3
 #define DESELECT()  MMC_A |= MMC_DAT3
 
 #define SELECT_ESP()    MMC_A &= ~CS_ESP8266
 #define DESELECT_ESP()  MMC_A |= CS_ESP8266
+
+#define SELECT_JOY()    MMC_A &= ~CS_JOY
+#define DESELECT_JOY()  MMC_A |= CS_JOY
 
 #define SPIF    0x01
 

@@ -27,8 +27,8 @@
 #include "menu.h"
 #include "philes.h"
 #include "diskio.h"
-
 #include "serial.h"
+#include "joy.h"
 
 
 #define vputs(s) {}
@@ -265,6 +265,8 @@ uint8_t blink(void) {
         leds <<= 1;
         if (leds == 0) leds = 0x01;
     }
+
+    joy_tick(tick);
 
     return menu_dispatch(tick);
 }

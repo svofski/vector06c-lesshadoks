@@ -29,6 +29,7 @@ module floppy(
     output              sd_clk,     // sd card signals
     output              uart_txd,   // uart tx pin
     output  reg         esp_ss_n,   // esp12f slave select (GPIO15, electrically pulled down)
+    output  reg         joy_ss_n,   // MCP23S17 port expander slave select
     
     // I/O interface to host system (Vector-06C)
     input       [2:0]   hostio_addr,
@@ -63,6 +64,8 @@ module floppy(
     output              host_hold,
 
     output  reg         fakerom_en,     // enable kvaz in low ram
+    output  reg [7:0]   player1,
+    output  reg [7:0]   player2,
     
     output      [3:0]   vg93debug
 );
@@ -97,8 +100,9 @@ parameter PORT_OSD_COMMAND = 17;        // {F11,F12,HOLD}
 parameter PORT_SDRAM_PAGE = 18;
 parameter PORT_FAKEROM = 8'h13;
 
-//assign addr = cpu_a;
-//assign odata = cpu_do;
+parameter PORT_PLAYER1 = 8'h14; // joystick 1
+parameter PORT_PLAYER2 = 8'h15; // joystick 2
+
 assign red_leds = {spi_wren,dma_debug[6:0]};
 assign debug = wdport_status;
 assign debugidata = {ce & bufmem_en, ce, hostio_rd, wd_ram_rd};
@@ -260,6 +264,8 @@ always @(posedge clk or negedge reset_n) begin
 	esp_ss_n <= 1;
         sdram_page <= 0;
         fakerom_en <= 0;
+        player1 <= 8'hff;
+        player2 <= 8'hff;
     end else begin
         if (ce) begin
             if (memwr && cpu_a[15:8] == 8'hE0) begin
@@ -277,6 +283,7 @@ always @(posedge clk or negedge reset_n) begin
                 if (cpu_a[7:0] == PORT_MMCA) begin
                     sd_dat3 <= cpu_do[0];
 		    esp_ss_n <= cpu_do[1];
+                    joy_ss_n <= cpu_do[2];
                 end
                 
                 // CPU status return
@@ -301,6 +308,10 @@ always @(posedge clk or negedge reset_n) begin
 
                 // fake rom enable
                 if (cpu_a[7:0] == PORT_FAKEROM) fakerom_en <= cpu_do[0];
+                
+                // B1 B2 1 1 UP DN LT RT                                                          
+                if (cpu_a[7:0] == PORT_PLAYER1) player1 <= {cpu_do[2],cpu_do[3],2'b11,cpu_do[6],cpu_do[7],cpu_do[5],cpu_do[4]};
+                if (cpu_a[7:0] == PORT_PLAYER2) player2 <= {cpu_do[2],cpu_do[3],2'b11,cpu_do[6],cpu_do[7],cpu_do[5],cpu_do[4]};
             end
             else begin
                 dma_blocks <= 4'h0;
