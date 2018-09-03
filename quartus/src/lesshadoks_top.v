@@ -349,10 +349,13 @@ wire 		fdc_boot_loaded;
 // joysticks, read-only ports
 wire    [7:0]   fdc_player1;
 wire    [7:0]   fdc_player2;
-wire            joy1_sel = (shavv_r == 8'h2e) & ~cchtvv_n;
-wire            joy2_sel = (shavv_r == 8'h2f) & ~cchtvv_n;
-wire            joy_sel = joy1_sel | joy2_sel;
-wire    [7:0]   joy_do = joy1_sel ? fdc_player1 : joy2_sel ? fdc_player2 : 8'hff;
+wire	[7:0]	uspid = ~{fdc_player1[2], fdc_player1[0], fdc_player1[3], fdc_player1[1], fdc_player1[6], 3'b000};
+
+wire            joy1_sel = (shavv_r == 8'h2e) & ~cchtvv_n;	// joystick C P1
+wire            joy2_sel = (shavv_r == 8'h2f) & ~cchtvv_n;	// joystick C P2
+wire		joyu_sel = (shavv_r == 8'h27) & ~cchtvv_n;	// joystick USPID
+wire            joy_sel = joy1_sel | joy2_sel | joyu_sel;
+wire    [7:0]   joy_do = joy1_sel ? fdc_player1 : joy2_sel ? fdc_player2 : joyu_sel ? uspid : 8'hff;
 
 floppy floppy0(
     .clk(clk_cpu),
