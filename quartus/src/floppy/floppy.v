@@ -262,6 +262,7 @@ always @(posedge clk or negedge reset_n) begin
         uart_send <= 0;
         sd_dat3 <= 1;
 	esp_ss_n <= 1;
+	joy_ss_n <= 1;
         sdram_page <= 0;
         fakerom_en <= 0;
         player1 <= 8'hff;
@@ -399,7 +400,8 @@ spi sd0(.clk(clk),
         .wr(spi_wren), 
         .do(spdr_do), 
         .dsr(spdr_dsr),
-	.slow(~esp_ss_n)
+	.slow((~esp_ss_n)|(~joy_ss_n)),	
+	.slowx2(~joy_ss_n)
         );
 
 reg  [7:0]  dma_lsb, dma_msb;

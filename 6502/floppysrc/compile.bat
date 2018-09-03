@@ -1,2 +1,3 @@
-@set PATH=%PATH%;..\cc65-winbuild\mingw\bin;..\cc65-winbuild\mingw\msys\1.0\bin;..\cc65-winbuild\cc65-master\bin;..\cc65-winbuild\bin2hex
+@set PATH=%PATH%;..\mingw\bin;..\mingw\msys\1.0\bin;..\cc65\bin;..\bin2hex
+mkdir build
 @mingw32-make %1 %2 %3

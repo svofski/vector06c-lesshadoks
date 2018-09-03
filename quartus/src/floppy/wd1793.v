@@ -202,7 +202,7 @@ always @(posedge clk or negedge reset_n) begin: _wdmain
         data_rdlength <= 0;
         buff_addr <= 0;
         {buff_rd,buff_wr} <= 0;
-        oCPU_REQUEST <= CPU_REQUEST_ACK;
+        oCPU_REQUEST <= CPU_REQUEST_NONE;
         //odata <= 8'b0;
         wdstat_multisector <= 1'b0;
         state <= STATE_READY;

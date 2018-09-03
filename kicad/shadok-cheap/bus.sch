@@ -620,7 +620,7 @@ Text Label 7450 4750 2    50   ~ 0
 ~ЗПВВЪ
 Text Label 7800 4850 2    50   ~ 0
 ~БЛКЪ
-Text Label 7850 4950 2    50   ~ 0
+Text Label 7950 4950 2    50   ~ 0
 ~ВВОДЪ_СИСТЕМЫ
 Text Label 7450 5050 2    50   ~ 0
 СТЕКЪ
@@ -1263,9 +1263,7 @@ Wire Wire Line
 Wire Wire Line
 	7100 4950 7950 4950
 NoConn ~ 7100 4650
-NoConn ~ 7100 4950
 NoConn ~ 7100 5150
-NoConn ~ 5900 4950
 NoConn ~ 5900 5150
 $Comp
 L con-ussr-snp:74LVC1T45 U601
@@ -1481,8 +1479,6 @@ F 3 "" H 9250 6250 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	7950 6050 8650 6050
-Text Label 7950 6050 0    50   ~ 0
-~СБРОСЪ
 Wire Wire Line
 	9250 5850 10100 5850
 Connection ~ 9250 5850
@@ -1498,6 +1494,14 @@ Wire Notes Line
 	10500 5300 8600 5300
 Text Notes 9750 6450 0    50   ~ 0
 BODGE IN REV 1
+Text Label 7950 6050 0    50   ~ 0
+~ВВОДЪ_СИСТЕМЫ
+Wire Wire Line
+	7100 4950 7100 5000
+Wire Wire Line
+	7100 5000 5900 5000
+Wire Wire Line
+	5900 5000 5900 4950
 Wire Bus Line
 	5250 3650 5250 4350
 Wire Bus Line
@@ -1508,4 +1512,5 @@ Wire Bus Line
 	4300 4350 4300 5550
 Wire Bus Line
 	1500 4850 1500 5650
+Connection ~ 7100 4950
 $EndSCHEMATC

@@ -1,5 +1,6 @@
 #include "integer.h"
 #include "specialio.h"
+#include "serial.h"
 
 #define SLAVE_CONTROL_BYTE  0x40
 
@@ -38,9 +39,12 @@ void joy_tick(uint8_t tick)
 
     SELECT_JOY();
 
-    PLAYER1 = readByte(GPIOA);
-    PLAYER2 = readByte(GPIOB);
+    player1_bits = readByte(GPIOA);
+    player2_bits = readByte(GPIOB);
+    //ser_puts("JOY: "); print_hex(player1_bits); print_hex(player2_bits); ser_nl();
 
+    PLAYER1 = player1_bits;
+    PLAYER2 = player2_bits;
     DESELECT_JOY();
 }
 

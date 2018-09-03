@@ -74,7 +74,7 @@ reg [7:0] strobdelay;
 always @(posedge clk_cpu)
 	strobdelay <= {strobdelay[6:0], VU_STROB_SOST};
 	
-assign virt_kvaz_control_word = {floppy_sdram_busy, ~VU_ZPVV_N & (shavv_r==8'h1), ramc_read, kvaz_memrd_flag};
+assign virt_kvaz_control_word = {SPI_CLK, SPI_MISO, SPI_MOSI, JOY_SS_N};
 
 wire sys_reset;
 reset_debouncer reset_debouncer(.clk(clk_cpu), 
@@ -349,8 +349,8 @@ wire 		fdc_boot_loaded;
 // joysticks, read-only ports
 wire    [7:0]   fdc_player1;
 wire    [7:0]   fdc_player2;
-wire            joy1_sel = (shavv_r == 8'h0e) & ~cchtvv_n;
-wire            joy2_sel = (shavv_r == 8'h0f) & ~cchtvv_n;
+wire            joy1_sel = (shavv_r == 8'h2e) & ~cchtvv_n;
+wire            joy2_sel = (shavv_r == 8'h2f) & ~cchtvv_n;
 wire            joy_sel = joy1_sel | joy2_sel;
 wire    [7:0]   joy_do = joy1_sel ? fdc_player1 : joy2_sel ? fdc_player2 : 8'hff;
 
@@ -383,9 +383,11 @@ floppy floppy0(
     .sdram_data_i(floppy_sdram_di),
     .sdram_read(floppy_sdram_read),
     .sdram_write(floppy_sdram_write),
-    .sdram_busy(floppy_sdram_busy),
+    .sdram_busy(floppy_sdram_busy)
+    ,
 
     // joysticks polled by SoC
+    
     .player1(fdc_player1),
     .player2(fdc_player2)
 );

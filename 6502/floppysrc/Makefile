@@ -26,10 +26,11 @@ all:	disk
 
 disk:	$(OBJS)
 	$(L65) -C vector.lc $(OBJS) ../cc65/lib/vector.lib -o disk.bin -m disk.map
-	gobjcopy -Ibinary -Oihex disk.bin disk.hex
+	objcopy -Ibinary -Oihex disk.bin disk.hex
+	objcopy -Ibinary -Overilog disk.bin disk.hax
 	mkdir -p $(DSTDIR)
-	mv disk.{hex,bin,map} $(DSTDIR)
-	hexdump -v -e '/1 "%02X "' $(DSTDIR)/disk.bin >$(DSTDIR)/disk.hax
+	mv disk.{hex,hax,bin,map} $(DSTDIR)     
+	#hexdump -v -e '/1 "%02X "' $(DSTDIR)/disk.bin >$(DSTDIR)/disk.hax
 
 clean:
 	rm -f build/*

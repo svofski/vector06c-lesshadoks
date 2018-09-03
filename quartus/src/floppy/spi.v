@@ -33,7 +33,8 @@ module spi(
     output      [7:0]   do,
     output  reg         dsr,
 
-    input               slow);
+    input               slow,
+    input               slowx2);
 
 assign sck = slow ? slow_sck : ~clk & scken;
 assign do = slow ? slow_shiftreg : shiftreg;
@@ -46,21 +47,21 @@ reg         scken = 0;
 
 wire ce_int = slow ? slow_ce : ce;
 
-reg [1:0] slow_cnt;
+reg [2:0] slow_cnt_r;
+wire [1:0] slow_cnt = slowx2 ? slow_cnt_r[2:1] : slow_cnt_r[1:0];
 reg slow_sck_r;
 
-wire slow_ce = &slow_cnt;
-wire cock_ce = slow_cnt == 2'b10;
-wire slow_sck_ce = slow_cnt[0];
+wire slow_ce = slowx2 ? &slow_cnt_r[2:0] : &slow_cnt_r[1:0];
+wire slow_sck_ce = slowx2 ? &slow_cnt_r[1:0] : slow_cnt[0];
 wire slow_sck = slow_sck_r;
 
 always @(posedge clk) begin: _could_mean_anything
     if (!reset_n) begin
-        slow_cnt <= 0;
+        slow_cnt_r <= 0;
         slow_sck_r <= 1'b0;
     end
     else begin
-        slow_cnt <= slow_cnt + 1'b1;
+        slow_cnt_r <= slow_cnt_r + 1'b1;
     end
 
     if (scken && slow_sck_ce) slow_sck_r <= ~slow_sck_r;
@@ -79,7 +80,7 @@ always @(posedge clk or negedge reset_n) begin
         samp_sck <= sck;
         samp_miso <= miso;
         if (~samp_sck & sck) begin
-            $display("fuck: ", miso);
+            $display("sampled: ", miso);
             slow_shiftreg <= {slow_shiftreg[6:0],samp_miso};
         end
     end
