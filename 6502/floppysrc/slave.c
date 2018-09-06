@@ -59,59 +59,65 @@ FIL	file1;
 #define DELAY_RELOAD 255 //128
 
 uint8_t blink(void);
-uint8_t slave(void);
+uint8_t loop_until_diskchange(void);
 
-/* imagefile points to a global buffer, which can be modified externally */
-/* by an osd menu for example */
-/* see menu.c: fsel_getselected(ptrfile+10) */
-uint8_t thrall(char *imagefile, uint8_t *buffer) {
+extern char * fdda;
+extern char * fddb;
+extern char * fdda_name;
+extern char * fddb_name;
+
+uint8_t thrall(uint8_t *buffer) {
     uint8_t first = 0;
     uint8_t result;
 
     SLAVE_STATUS = CPU_STATUS_DRVNOTRDY;
-
-    menu_init();
 
     for(;;) {
         SLAVE_STATUS = CPU_STATUS_DRVNOTRDY;
         do {
             result = philes_mount();
             ser_puts("mount() result=\n"); print_hex(result); ser_nl();
-            result = philes_opendir();
+            result = philes_opendir(SUB_FDD);
             ser_puts("opendir() result=\n"); print_hex(result); ser_nl();
             if (result != FR_OK) break;
 
-            /* first run, initialise imagefile with the first file in the dir */
-            if (!first) {
-                philes_nextfile(imagefile+10, 1);
-                first++;
-            }
-            //strcpy(imagefile+10, "DEMOS.FDD");
-            //strcpy(imagefile+10, "SKYNET.FDD");
+            ///* first run, initialise imagefile with the first file in the dir */
+            //if (!first) {
+            //    philes_nextfile(imagefile+10, 1);
+            //    first++;
+            //}
 
             ser_nl();
-            if ((result = f_open(&file1, imagefile, FA_READ)) != FR_OK) {
-                ser_puts("Error: ");
+            if ((result = f_open(&file1, fdda, FA_READ)) != FR_OK) {
+                ser_puts("Error opening: "); ser_puts(fdda); ser_nl();
+                if (!first) {
+                    philes_nextfile(fdda_name, 1);
+                    ser_puts("Will try instead: "); ser_puts(fdda); ser_nl();
+                    ++first;
+                    continue;
+                }
                 first = 0; // try to recover by re-reading the directory
             } else {
                 ser_puts("=> ");
             }
-            ser_puts(imagefile); ser_putc('$');ser_nl();
+            ser_puts(fdda); ser_putc('$');ser_nl();
 
             if (result != FR_OK) break;
 
             fdd_load(&file1, &fddimage, buffer);
-            slave();
+            loop_until_diskchange();
             /* slave exits when a new image file is selected */
         } while(0);
         menu_busy(2);
         menu_dispatch(0);
         delay2(10);
     }
+
+    return 0;
 }
 
 // thrall forever
-uint8_t slave(void) {
+uint8_t loop_until_diskchange(void) {
     uint8_t result;
     uint8_t t1;
     uint8_t cmd;

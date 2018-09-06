@@ -32,6 +32,7 @@
 #include "osd.h"
 #include "philes.h"
 #include "bootes.h"
+#include "menu.h"
 
 char* cnotice1 = "LES SHADOKS POMPAIENT FOR VECTOR-06C";
 char* cnotice2 = "(C)2008-2018  VIACHESLAV SLAVINSKY";
@@ -111,7 +112,7 @@ void main(void) {
     delay2(50);
     load_boot();
 
-    thrall(ptrfile, Buffer);
+    thrall(Buffer);
     print_result(result);
     ser_puts("\r\nWTF?");
 }

@@ -8,6 +8,7 @@
 
 #include "cgispiffs.h"
 #include "io.h"
+#include "inifile.h"
 
 extern spiffs fs;
 
@@ -32,11 +33,13 @@ ICACHE_FLASH_ATTR static void assume_spi_master()
 
 ICACHE_FLASH_ATTR void spiffs_configure_fpga()
 {
-    char boot[128];
-
     assume_spi_master();
-    spiffs_get_boot(boot, sizeof(boot));
-    int rbf = SPIFFS_open(&fs, boot, SPIFFS_O_RDONLY, 0);
+    const char * boot = inifile_get_boot();
+    if (boot == NULL) {
+        printf("spiffs_configure_fpga() no RBF image found\n");
+        return;
+    }
+    int rbf = SPIFFS_open(&fs, (char *)boot, SPIFFS_O_RDONLY, 0);
     if (rbf < 0) {
         printf("SPIFFS_open rbf: '%s' errno %d\n", boot, SPIFFS_errno(&fs));
         return;
@@ -71,14 +74,15 @@ ICACHE_FLASH_ATTR void spiffs_configure_fpga()
     //   02 1B EE 01 FA->0100-0000 1101-1000 0111-0111 1000-0000 0101-1111
 
     uint32_t csum = 0, ci = 0;
+    char buf[128];
     for(;;) {
-        int len = SPIFFS_read(&fs, rbf, boot, sizeof(boot));
+        int len = SPIFFS_read(&fs, rbf, buf, sizeof(buf));
         if (len > 0) {
-            //spi_transfer(1, /* out_data */ boot, /* in_data */ NULL, len, 
+            //spi_transfer(1, /* out_data */ buf, /* in_data */ NULL, len, 
             //        SPI_8BIT);
             for (int i = 0; i < len; ++i) {
-                csum = csum + (boot[i] ^ ci); ++ci;
-                spi_tx8(HSPI, boot[i]);
+                csum = csum + (buf[i] ^ ci); ++ci;
+                spi_tx8(HSPI, buf[i]);
             }
         } else {
             break;
@@ -94,7 +98,7 @@ ICACHE_FLASH_ATTR void spiffs_configure_fpga()
     }
     // 6. pump 2x DCLK
     // (probably not a problem to pump 8
-    //spi_transfer(1, boot, NULL, 1, SPI_8BIT);
+    //spi_transfer(1, buf, NULL, 1, SPI_8BIT);
     spi_tx8(HSPI, 0);
     // 7. wait Tcd2um (300us)
     os_delay_us(300);

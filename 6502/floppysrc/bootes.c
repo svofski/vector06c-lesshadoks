@@ -5,7 +5,8 @@
 #include <string.h>
 
 static FIL bootfile;
-extern char * ptrfile;
+extern char * scratch_full;
+extern char * scratch_name;
 
 static void enable_fakerom(void);
 
@@ -13,12 +14,11 @@ unsigned char * sdram_window = (unsigned char *)(0x5000);
 
 void load_boot()
 {
-    char * filename = ptrfile + 10;
     philes_mount();
-    if (philes_opendir() == FR_OK) {
-        while(philes_nextfile(filename, 1) == FR_OK) {
-            ser_puts(filename);
-            if (strcmp(filename, "BOOTS.BIN") == 0) {
+    if (philes_opendir(SUB_BOOT) == FR_OK) {
+        while(philes_nextfile(scratch_name, 1) == FR_OK) {
+            ser_puts(scratch_full);
+            if (strcmp(scratch_name, "BOOTS.BIN") == 0) {
                 ser_puts(" enabling fakerom: ");
                 enable_fakerom(); 
                 break;
@@ -36,7 +36,7 @@ void enable_fakerom()
     // kvaz and sdram_arbitre. keep it simple for now.
     SDRAM_PAGE = 0;  
 
-    if (f_open(&bootfile, ptrfile, FA_READ) == FR_OK) {
+    if (f_open(&bootfile, scratch_full, FA_READ) == FR_OK) {
         ser_puts("open");
         f_read(&bootfile, sdram_window, 2048, &bytesread);
         ser_puts("read: "); print_hex(bytesread>>8); print_hex(bytesread);
@@ -46,9 +46,9 @@ void enable_fakerom()
             // until rus/lat starts blinking
             FAKEROM = 1;
             
-            ser_nl();
-            print_buff(sdram_window);
-            print_buff(sdram_window+1024);
+            //ser_nl();
+            //print_buff(sdram_window);
+            //print_buff(sdram_window+1024);
         }
     }
     ser_nl();

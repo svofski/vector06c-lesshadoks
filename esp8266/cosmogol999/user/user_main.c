@@ -1,18 +1,3 @@
-/*
- * ----------------------------------------------------------------------------
- * "THE BEER-WARE LICENSE" (Revision 42):
- * Jeroen Domburg <jeroen@spritesmods.com> wrote this file. As long as you retain 
- * this notice you can do whatever you want with this stuff. If we meet some day, 
- * and you think this stuff is worth it, you can buy me a beer in return. 
- * ----------------------------------------------------------------------------
- */
-
-/*
-This is example code for the esphttpd library. It's a small-ish demo showing off 
-the server, including WiFi connection management capabilities, some IO and
-some pictures of cats.
-*/
-
 #include <string.h>
 #include <stdio.h>
 
@@ -33,6 +18,7 @@ some pictures of cats.
 #include "cgispiffs.h"
 #include "cgirboot.h"
 #include "cgifloppy.h"
+#include "inifile.h"
 
 #include "uart.h"
 #include "slave.h"
@@ -146,6 +132,41 @@ LOCAL void ICACHE_FLASH_ATTR spislave_init(void *arg)
     slave_init();
 }
 
+ICACHE_FLASH_ATTR
+void test_inifile_printall()
+{
+    const char * s = inifile_get_boot();
+    printf("inifile_get_boot(): [%s]\n", s ? s : "(null)");
+    s = inifile_get_mode();
+    printf("inifile_get_mode(): [%s]\n", s ? s : "(null)");
+    s = inifile_get_fdd();
+    printf("inifile_get_fdd(): [%s]\n", s ? s : "(null)");
+    s = inifile_get_rom();
+    printf("inifile_get_rom(): [%s]\n", s ? s : "(null)");
+}
+
+ICACHE_FLASH_ATTR
+void test_inifile()
+{
+    test_inifile_printall();
+
+    printf("set mode=rom\n");
+    inifile_set_mode("rom");
+    test_inifile_printall();
+
+    printf("set fdd=cockblock.fdd\n");
+    inifile_set_fdd("cockblock.fdd");
+    test_inifile_printall();
+
+    printf("set rom=fucksock.rom\n");
+    inifile_set_rom("fucksock.rom");
+    test_inifile_printall();
+
+    printf("set mode=fdd\n");
+    inifile_set_mode("fdd");
+    test_inifile_printall();
+}
+
 //Main routine. Initialize stdout, the I/O, filesystem and the webserver and we're done.
 ICACHE_FLASH_ATTR void user_init(void) {
     stdoutInit();
@@ -154,6 +175,8 @@ ICACHE_FLASH_ATTR void user_init(void) {
 
     ioInit();
     spiffs_init();
+
+    //test_inifile();
 
     spiffs_configure_fpga();
     io_shutdown_spi();

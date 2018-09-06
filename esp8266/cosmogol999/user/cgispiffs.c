@@ -6,6 +6,7 @@
 
 #include "spiffs.h"
 #include "esp_spiffs.h"
+#include "inifile.h"
 
 const char * mount_msg;
 
@@ -43,6 +44,7 @@ ICACHE_FLASH_ATTR void spiffs_init()
 ICACHE_FLASH_ATTR void spiffs_set_boot(const char * name) 
 {
     printf("Trying to set boot to: %s\n", name);
+#if 0
     spiffs_file fdw = SPIFFS_open(&fs, ".config", 
             SPIFFS_O_CREAT|SPIFFS_O_WRONLY, 0);
     if (fdw < 0) {
@@ -56,8 +58,12 @@ ICACHE_FLASH_ATTR void spiffs_set_boot(const char * name)
         printf("SPIFFS_write errno %d\n", SPIFFS_errno(&fs));
     }
     SPIFFS_close(&fs, fdw);
+#else
+    inifile_set_boot(name);
+#endif
 }
 
+#if 0
 ICACHE_FLASH_ATTR void spiffs_get_boot(char * name, int len)
 {
     *name = '\0';
@@ -91,6 +97,7 @@ ICACHE_FLASH_ATTR void spiffs_get_boot(char * name, int len)
         *name = '\0';
     }
 }
+#endif
 
 ICACHE_FLASH_ATTR size_t free_space()
 {
@@ -111,8 +118,11 @@ int ICACHE_FLASH_ATTR spiffs_dir(HttpdConnData * con)
 
     SPIFFS_info(&fs, &total, &used);
 
+#if 0
     char boot[64];
     spiffs_get_boot(boot, 64);
+#endif
+    const char * boot = inifile_get_boot();
 
     snprintf(buf, sizeof(buf), 
             "{\"info\":{\"total\":%u,\"used\":%u,\"boot\":\"%s\"},"

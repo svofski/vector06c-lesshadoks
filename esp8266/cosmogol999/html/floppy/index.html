@@ -4,6 +4,9 @@
 <link rel="stylesheet" type="text/css" href="../style.css">
 <script type="text/javascript">
 
+var OFFLINE = false;
+var mainMode = "fdd";
+
 var xhr = j();
 
 function selectFDD(drv, fdd)
@@ -24,22 +27,21 @@ function selectFDD(drv, fdd)
     return false;
 }
 
-function fillList(dobj)
+function fillListFdds(files)
 {
-    console.log(dobj);
     var txt = "";
 
     var sel = function(n,i) {
-        switch (dobj.files[i][0]) {
+        switch (files[i][0]) {
                 case "A":   return n === 0 ? "sel" : "";
                 case "B":   return n === 1 ? "sel" : "";
                 case "R":   return n === 10 ? "sel" : "";
         }
     };
     var name = function(i) {
-        return dobj.files[i].substring(1);
+        return files[i].substring(1);
     };
-    for (var i = 0; i < dobj.files.length; ++i) {
+    for (var i = 0; i < files.length; ++i) {
         txt += "<li>";
         txt += "<div onclick='return selectFDD(\"A\",\"" + name(i) + 
             "\");' class='floppy " + sel(0,i) + "'>A</div>";
@@ -52,35 +54,162 @@ function fillList(dobj)
         txt += "</li>";
     }
     $("#dir").innerHTML=txt;
+
+    $("#tab-fdd").classList.add("sel");
+    $("#tab-rom").classList.remove("sel");
+}
+
+function setMode(m)
+{
+    if (OFFLINE) {
+        mainMode = m;
+        doCatalog();
+    } else {
+        // xhr request new mode
+    }
+}
+
+function loadRom(rom,fixup)
+{
+    console.log("loadRom: ", rom, fixup);
+    if (OFFLINE) {
+        doCatalog();
+    } else {
+        // request rom load
+    }
+}
+
+function fillListRoms(files)
+{
+    var txt = "";
+
+    var roms = [];
+    var fixups = {};
+    var selected_name = "";
+
+    var name = function(i) {
+        return files[i].substring(1);
+    };
+    var isfixup = function(i) {
+        return files[i].toUpperCase().endsWith(".FIX");
+    };
+    var hasfixup = function(name) {
+        return fixups[name] != undefined;
+    };
+
+    for (var i = 0; i < files.length; ++i) {
+        var n = name(i);
+        if (files[i][0] === "A") {
+            selected_name = n;
+        }
+        if (isfixup(i)) {
+            var romname = n.substring(0, n.length - 4) + ".ROM";
+            fixups[romname] = n;
+        } else {
+            roms.push(n);
+        }
+    }
+    roms.sort();
+    
+    console.log("roms: ", roms);
+    console.log("fixups: ", fixups);
+
+    var sel = function(n,name) {
+        if (n === 0) {
+            return name === selected_name ? "sel" : "";
+        }
+        if (n === 1) {
+            //return fixups[name] === 
+        }
+    };
+
+
+    var container = $("#dir");
+    container.innerHTML = "";
+    
+    for (var i = 0; i < roms.length; ++i) {
+        var li = document.createElement('li');
+        (function(romname) {
+            li.addEventListener("click", function(e) {
+                loadRom(romname);
+                e.stopPropagation();
+            });
+        })(roms[i]);
+
+        var f = document.createElement('div');
+        f.classList.add('fixup');
+        f.innerText = "F";
+        if (!hasfixup(roms[i])) f.classList.add('hidden');
+        (function(romname,fix) {
+            f.addEventListener("click", function(e) {
+                loadRom(romname, fix);
+                e.stopPropagation();
+            });
+        })(roms[i],fixups[roms[i]]);
+
+        var r = document.createElement('div');
+        r.classList.add("fddname");
+        r.innerText = roms[i];
+
+        li.appendChild(f);
+        li.appendChild(r);
+        container.appendChild(li);
+    }
+
+    $("#tab-rom").classList.add("sel");
+    $("#tab-fdd").classList.remove("sel");
+}
+
+function fillList(dobj)
+{
+    console.log(dobj);
+
+    switch (dobj.mode) {
+        case "rom": return fillListRoms(dobj.files);
+        case "fdd": return fillListFdds(dobj.files);
+        default:    console.log("WARNING: dobj.mode=", dobj.mode);
+                    return fillListFdds(dobj.files);
+    }
 }
 
 function doCatalog() {
-    xhr.open("GET", "catalog");
-    xhr.onreadystatechange=function() {
-        if (xhr.readyState==4 && xhr.status>=200 && xhr.status<300) {
-            var dobj = JSON.parse(xhr.responseText);
-            fillList(dobj);
+    if (OFFLINE) {
+        var txt;
+        switch (mainMode) {
+            case "fdd": txt='{"files":["ADISK1.FDD","_DISK2.FDD","_DISK3.FDD","_DISK4.FDD","_DISK5.FDD"]}';
+                break;
+            case "rom": txt='{"mode":"rom","files":["_ADSKOK.FIX","_PUTUP.ROM","_PUTUP.FIX","_RISEOUT.ROM", "AADSKOK.ROM"]}';
+                break;
         }
-    };
-    xhr.send();
+        fillList(JSON.parse(txt));
+    } else {
+        xhr.open("GET", "catalog");
+        xhr.onreadystatechange=function() {
+            if (xhr.readyState==4 && xhr.status>=200 && xhr.status<300) {
+                var dobj = JSON.parse(xhr.responseText);
+                fillList(dobj);
+            }
+        };
+        xhr.send();
+    }
 }
 
 window.onload = function(e) {
     doCatalog();
-
-    //var txt='{"files":["DISK1.FDD","DISK2.FDD","DISK3.FDD","DISK4.FDD","DISK5.FDD","DISK6.FDD","DISK7.FDD","DISK8.FDD","DISK9.FDD","DISK10.FDD","DISK11.FDD","DISK12.FDD","DISK13.FDD","DISK14.FDD","DISK15.FDD","DISK16.FDD"],"selected":{"0":0,"1":5,"10":12}}';
-    //fillList(JSON.parse(txt));
 };
 
 </script>
 </head>
 <body>
-    <a id="up" href="..">..</a>
+    <a id="up" href="..">Наверх</a>
     <div id="main">
-    <h1>Интерфейс эмулятора дисковода</h1>
-    Образы дискет на SD-карте:
+    <div class="tabheader">
+        <div id="tab-fdd" class="tab" onclick="setMode('fdd');">FDD</div><div id="tab-rom" class="tab" onclick="setMode('rom');">ROM</div>
+    </div>
+    <div class="filelist">
     <pre id="dir">
     Les Shadoks, pompent-ils? Pompent-ils pas?...
     </pre>
+    </div>
 </body>
 </html>

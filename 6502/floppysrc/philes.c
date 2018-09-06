@@ -28,7 +28,19 @@ FATFS 		fatfs;
 FILINFO 	finfo;
 DIR 		dir;
 
-char *ptrfile = "/VECTOR06/xxxxxxxx.xxx\0\0\0";
+char * fdda = "/V06C/FDD/xxxxxxxx.xxx\0\0\0";
+char * fdda_name;
+char * fddb = "/V06C/FDD/xxxxxxxx.xxx\0\0\0";
+char * fddb_name;
+char * edd  = "/V06C/EDD/xxxxxxxx.xxx\0\0\0";
+char * edd_name;
+char * rom  = "/V06C/ROM/xxxxxxxx.xxx\0\0\0";
+char * rom_name;
+char * fixup= "/V06C/ROM/xxxxxxxx.xxx\0\0\0";
+char * fixup_name;
+char * scratch_full = "/V06C/xxx/xxxxxxxx.xxx\0\0\0";
+char * scratch_sub;
+char * scratch_name;
 
 BYTE endsWith(char *s1, const char *suffix) {
     int s1len = strlen(s1);
@@ -42,16 +54,27 @@ BYTE endsWith(char *s1, const char *suffix) {
 FRESULT philes_mount() {
     FRESULT result = FR_NO_FILESYSTEM;
 
+    scratch_sub = scratch_full + 6;
+    scratch_name = scratch_full + 10;
+    fdda_name = fdda + 10;
+    fddb_name = fddb + 10;
+    edd_name = edd + 10;
+    rom_name = rom + 10;
+    fixup_name = fixup + 10;
+
     disk_initialize(0); 
     return f_mount(0, &fatfs);
 }
 
-FRESULT philes_opendir() {
+FRESULT philes_opendir(const char * sub) {
     FRESULT result;
+    int ofs;
 
-    ptrfile[9] = 000; 
-    result = f_opendir(&dir, ptrfile);					
-    ptrfile[9] = '/'; 
+    strcpy(scratch_sub, sub);
+    result = f_opendir(&dir, scratch_full);
+    ofs = strlen(scratch_full);
+    scratch_full[ofs] = '/';
+    scratch_name = scratch_full + ofs + 1;
 
     return result;
 }
@@ -67,16 +90,14 @@ FRESULT philes_nextfile(char *filename, uint8_t terminate) {
         if (finfo.fattrib & AM_DIR) {
             // nowai
         } else {
-            if (endsWith(finfo.fname, ".FDD") || endsWith(finfo.fname, ".BIN")){
-                if (filename != 0) {
-                    if (terminate) {
-                        strncpy(filename, finfo.fname, 13);
-                    } else {
-                        strxcpy(filename, finfo.fname);
-                    }
+            if (filename != 0) {
+                if (terminate) {
+                    strncpy(filename, finfo.fname, 13);
+                } else {
+                    strxcpy(filename, finfo.fname);
                 }
-                return 0;
             }
+            return 0;
         }
     }
 

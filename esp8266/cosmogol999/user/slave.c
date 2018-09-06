@@ -44,6 +44,9 @@ void rxdata_kolbask(void * context, uint8_t * buffer, uint8_t len)
         case MTS_POLL_USER_COMMAND:
             master_status = MSTAT_POLL;
             break;
+        case MTS_GET_VALUE:
+            // ?
+            break;
         case MTS_REPLY_MORE:
             master_status = MSTAT_MORE;
             if (slave_state == SLAVE_VOID) {

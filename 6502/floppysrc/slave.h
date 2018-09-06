@@ -39,7 +39,7 @@
 #define CPU_STATUS_DRVNOTRDY	0x08	// drive not ready/door not closed
 #define CPU_STATUS_BUSY		0x80
 
-uint8_t thrall(char *imagefile, uint8_t *buffer);
+uint8_t thrall(uint8_t *buffer);
 
 
 #endif

@@ -23,8 +23,13 @@
 #include "integer.h"
 #include "tff.h"
 
+#define SUB_FDD "FDD"
+#define SUB_EDD "EDD"
+#define SUB_ROM "ROM"
+#define SUB_BOOT "BOOT"
+
 FRESULT philes_mount(void);
-FRESULT philes_opendir(void);
+FRESULT philes_opendir(const char * sub);
 FRESULT philes_nextfile(char *filename, uint8_t terminate);
 
 #endif

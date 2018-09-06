@@ -9,6 +9,4 @@ int cgiDirectory(HttpdConnData *connData);
 int cgiDelete(HttpdConnData *connData);
 int cgiSelectBoot(HttpdConnData *connData);
 
-
-void spiffs_get_boot(char * name, int len);
 void spiffs_configure_fpga();

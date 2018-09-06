@@ -9,14 +9,16 @@ typedef enum _master_to_slave {
     MTS_POLL_USER_COMMAND = 1, // cmd8, xxx expect answer in the next cmd
     MTS_REPLY_MORE = 2,
     MTS_REPLY_END = 3,
+    MTS_GET_VALUE = 4,
 } mts_t;
 
 typedef enum _slave_to_master {
     STM_NONE = 0,
-    STM_CATALOG = 6,
+    STM_CATALOG = 6,        // [code] [sub: 0=fdd,1=edd,2=rom,3=boot]
     STM_SELECT = 7,
     STM_WAIT = 32,
     STM_READY = 33,
+    STM_DATA = 34,
 } stm_t;
 
 typedef enum _mastercall {

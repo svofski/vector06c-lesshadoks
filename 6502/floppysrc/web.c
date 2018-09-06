@@ -12,6 +12,7 @@ typedef enum _master_to_slave {
     MTS_POLL_USER_COMMAND = 1, // cmd8, xxx expect answer in the next cmd
     MTS_REPLY_MORE = 2,
     MTS_REPLY_END = 3,
+    MTS_GET_VALUE = 4,
 } mts_t;
 
 typedef enum _slave_to_master {
@@ -20,6 +21,7 @@ typedef enum _slave_to_master {
     STM_SELECT = 7,
     STM_WAIT = 32,
     STM_READY = 33,
+    STM_DATA = 34,
 } stm_t;
 
 #define loop_until_bit_set(x,b)         {for(;((x)&(b))!=0;);}
@@ -36,16 +38,42 @@ static int16_t drvsel[3] = {0,-1,-1};
 static void send_buf(const uint8_t * data);
 static void recv_buf(uint8_t * data);
 static uint8_t handle_request(void);
-static void do_catalog(void);
+static void do_catalog(uint8_t which);
 static void do_select(void);
 static uint8_t next_token(void);
-static int8_t wait_token(uint8_t token);
+static int8_t wait_token(uint8_t code, uint8_t token);
 static int16_t findfileidx(const char * name);
 static void solo(uint8_t prio, uint8_t a, uint8_t b);
 
+void request_inifile_value(const char * key, char * result, uint8_t len);
+
 void menu_init()
 {
+    extern char * fdda_name;
+    extern char * fddb_name;
+    // query inifile in ESP
+    request_inifile_value("fdda=", fdda_name, 13);
+    request_inifile_value("fddb=", fddb_name, 13);
+
     DESELECT_ESP();
+}
+
+// master ->> MTS_GET_VALUE [len] [tok] "fdda="
+// slave  ->> STM_DATA token len 
+void request_inifile_value(const char * key, char * result, uint8_t len)
+{
+    uint8_t rxlen;
+    uint8_t iter = 3;
+    do {
+        if (--iter == 0) break;
+        txbuf[0] = MTS_GET_VALUE;
+        txbuf[1] = strlen(key);
+        txbuf[2] = next_token();
+        strcpy(txbuf + 3, key);
+    } while(wait_token(STM_DATA, ready_token) == -1);
+    
+    rxlen = rxbuf[2];
+    strncpy(result, rxbuf + 3, rxlen < len ? rxlen : len);
 }
 
 uint8_t menu_dispatch(uint8_t tick)
@@ -70,7 +98,8 @@ uint8_t handle_request()
 {
     switch (rxbuf[0]) {
         case STM_CATALOG:
-            do_catalog();
+            // [code] [sub: 0=fdd,1=edd,2=rom,3=boot]
+            do_catalog(rxbuf[1]);
             return MENURESULT_NOTHING;
         case STM_SELECT:
             do_select();
@@ -93,13 +122,22 @@ char sel(int16_t i) {
     return '_';
 }
 
-void do_catalog()
+void do_catalog(uint8_t which)
 {
     FRESULT res;
     int16_t i;
+    const char * sub;
+
+    switch (which) {
+        case 1: sub = SUB_EDD; break;
+        case 2: sub = SUB_ROM; break;
+        case 3: sub = SUB_BOOT; break;
+        case 0:
+        default:sub = SUB_FDD; break;
+    }
 
     ser_puts("web do_catalog(): opendir");
-    if (philes_opendir() == FR_OK) {
+    if (philes_opendir(sub) == FR_OK) {
         ser_puts(" ok"); ser_nl();
 
         for (i = 0; (res = philes_nextfile(&txbuf[4], 1)) == FR_OK; ++i) {
@@ -111,7 +149,7 @@ void do_catalog()
 
                 send_buf(txbuf);
                 ser_puts(&txbuf[3]); ser_puts("tok="); print_hex(ready_token);
-            } while(wait_token(ready_token) == -1); // resend until ok
+            } while(wait_token(STM_READY, ready_token) == -1); // resend until ok
         }
         txbuf[0] = MTS_REPLY_END;
         txbuf[1] = 0;
@@ -124,27 +162,32 @@ void do_catalog()
 
 void do_select()
 {
-    extern char * ptrfile;
+    extern char * fdda_name;
+    extern char * fddb_name;
+    extern char * edd_name;
 
     ser_puts("web do_select():");
     ser_puts(&rxbuf[2]);
     switch (rxbuf[2]) {
-        case 'A':   drvsel[0] = findfileidx(rxbuf+3); solo(0, 1, 2); break;
-        case 'B':   drvsel[1] = findfileidx(rxbuf+3); solo(1, 0, 2); break;
-        case 'R':   drvsel[2] = findfileidx(rxbuf+3); solo(2, 0, 1); break;
+        case 'A':   drvsel[0] = findfileidx(rxbuf+3); solo(0, 1, 2); 
+                    strncpy(fdda_name, rxbuf + 3, 13);
+                    break;
+        case 'B':   drvsel[1] = findfileidx(rxbuf+3); solo(1, 0, 2); 
+                    strncpy(fddb_name, rxbuf + 3, 13);
+                    break;
+        case 'R':   drvsel[2] = findfileidx(rxbuf+3); solo(2, 0, 1); 
+                    strncpy(edd_name, rxbuf + 3, 13);
+                    break;
     }
     txbuf[0] = MTS_REPLY_END;
     txbuf[1] = 0;
     send_buf(txbuf);
-
-    // for the time being, the only file we can select is in ptrfile+10
-    strncpy(ptrfile + 10, rxbuf+3, 13);
 }
 
 int16_t findfileidx(const char * name)
 {
     int16_t i;
-    if (philes_opendir() == FR_OK) {
+    if (philes_opendir(SUB_FDD) == FR_OK) {
         for (i = 0; philes_nextfile(&txbuf[4], 1) == FR_OK; ++i) {
             if (strcmp(&txbuf[4], name) == 0) {
                 return i;
@@ -196,16 +239,17 @@ uint8_t next_token()
     return ready_token;
 }
 
-int8_t wait_token(uint8_t token)
+int8_t wait_token(uint8_t code, uint8_t token)
 {
     uint8_t timeout = 64;
     do {
         recv_buf(rxbuf);
-        if ((rxbuf[0] == STM_READY && rxbuf[1] == 0) || --timeout == 0) {
+        if ((rxbuf[0] == code && rxbuf[1] == 0) || --timeout == 0) {
             return -1;
         }
         ser_puts(">tok:"); print_hex(rxbuf[1]);
         delay1(1);
-    } while(! (rxbuf[0] == STM_READY && rxbuf[1] == token));
+    } while(! (rxbuf[0] == code && rxbuf[1] == token));
     return 0;
 }
+

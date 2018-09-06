@@ -134,6 +134,57 @@ div.kvaz {
     cursor: pointer;
 }
 
+div.tab {
+    display: inline-block;
+    padding: 1em;
+    padding-left:1.2em;
+    padding-right:1.2em;
+    background-color: #bbb;
+    color: black;
+    border-radius:15px 15px 0px 0px;
+    margin-left: 1px;
+    cursor: pointer;
+    font-size: 200%;
+    font-family: monospace;
+}
+
+div.fixup {
+    display: inline-block;
+    padding: 1em;
+    padding-left:1.2em;
+    padding-right:1.2em;
+    background-color: #bbb;
+    color: white;
+    border-radius:5px;
+    margin: 2px;
+    cursor: pointer;
+}
+
 div.sel {
     background-color: black;
+}
+
+div.hidden {
+    visibility: hidden;
+}
+
+div.sel.tab {
+    background-color: #558;
+    color: white;
+}
+
+div.filelist {
+    background-color: #ddd;
+    margin:0px;
+    padding: 0px;
+}
+
+div.tabheader {
+    margin:0px;
+    padding: 0px;
+}
+
+pre {
+    margin: 0px;
+    padding: 13px;
 }
