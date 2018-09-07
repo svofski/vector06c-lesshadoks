@@ -4,10 +4,26 @@
 <link rel="stylesheet" type="text/css" href="../style.css">
 <script type="text/javascript">
 
-var OFFLINE = false;
-var mainMode = "fdd";
+var OFFLINE = true;
+var mainMode = null;
+if (OFFLINE) {
+    mainMode = "fdd";
+}
 
 var xhr = j();
+
+function oneHotTab(tab)
+{
+    const tabs = ["fdd", "rom", "edd", "boot"];
+    for (var i = 0; i < tabs.length; ++i) {
+        if (tabs[i] === tab) {
+            $("#tab-" + tabs[i]).classList.add("sel");
+        }
+        else {
+            $("#tab-" + tabs[i]).classList.remove("sel");
+        }
+    }
+}
 
 function selectFDD(drv, fdd)
 {
@@ -47,16 +63,15 @@ function fillListFdds(files)
             "\");' class='floppy " + sel(0,i) + "'>A</div>";
         txt += "<div onclick='return selectFDD(\"B\",\"" + name(i) + 
             "\");' class='floppy " + sel(1,i) + "'>B</div>";
-        txt += "<div onclick='return selectFDD(\"R\", \"" + name(i) + 
-            "\");' class='kvaz " + sel(10,i) + "'>C</div>";
+        //txt += "<div onclick='return selectFDD(\"R\", \"" + name(i) + 
+        //    "\");' class='kvaz " + sel(10,i) + "'>C</div>";
         txt += "<div class='fddname'>" + name(i) + "</div>";
         
         txt += "</li>";
     }
     $("#dir").innerHTML=txt;
 
-    $("#tab-fdd").classList.add("sel");
-    $("#tab-rom").classList.remove("sel");
+    oneHotTab("fdd");
 }
 
 function setMode(m)
@@ -123,7 +138,6 @@ function fillListRoms(files)
         }
     };
 
-
     var container = $("#dir");
     container.innerHTML = "";
     
@@ -156,9 +170,59 @@ function fillListRoms(files)
         container.appendChild(li);
     }
 
-    $("#tab-rom").classList.add("sel");
-    $("#tab-fdd").classList.remove("sel");
+    oneHotTab("rom");
 }
+
+function fillListEdds(files)
+{
+    var txt = "";
+
+    var sel = function(n,i) {
+        switch (files[i][0]) {
+                case "R":   return n === 10 ? "sel" : "";
+        }
+    };
+    var name = function(i) {
+        return files[i].substring(1);
+    };
+    for (var i = 0; i < files.length; ++i) {
+        txt += "<li>";
+        txt += "<div onclick='return selectFDD(\"R\", \"" + name(i) + 
+            "\");' class='kvaz " + sel(10,i) + "'>C</div>";
+        txt += "<div class='fddname'>" + name(i) + "</div>";
+        
+        txt += "</li>";
+    }
+    $("#dir").innerHTML=txt;
+
+    oneHotTab("edd");
+}
+
+function fillListBoots(files)
+{
+    var txt = "";
+
+    var sel = function(n,i) {
+        switch (files[i][0]) {
+                case "A":   return n === 10 ? "sel" : "";
+        }
+    };
+    var name = function(i) {
+        return files[i].substring(1);
+    };
+    for (var i = 0; i < files.length; ++i) {
+        txt += "<li>";
+        txt += "<div onclick='return selectFDD(\"R\", \"" + name(i) + 
+            "\");' class='kvaz " + sel(10,i) + "'>C</div>";
+        txt += "<div class='fddname'>" + name(i) + "</div>";
+        
+        txt += "</li>";
+    }
+    $("#dir").innerHTML=txt;
+
+    oneHotTab("boot");
+}
+
 
 function fillList(dobj)
 {
@@ -167,6 +231,8 @@ function fillList(dobj)
     switch (dobj.mode) {
         case "rom": return fillListRoms(dobj.files);
         case "fdd": return fillListFdds(dobj.files);
+        case "edd": return fillListEdds(dobj.files);
+        case "boot": return fillListBoots(dobj.files);
         default:    console.log("WARNING: dobj.mode=", dobj.mode);
                     return fillListFdds(dobj.files);
     }
@@ -176,14 +242,25 @@ function doCatalog() {
     if (OFFLINE) {
         var txt;
         switch (mainMode) {
-            case "fdd": txt='{"files":["ADISK1.FDD","_DISK2.FDD","_DISK3.FDD","_DISK4.FDD","_DISK5.FDD"]}';
+            case "fdd": 
+                txt='{"mode":"fdd","files":["ADISK1.FDD","_DISK2.FDD","_DISK3.FDD","_DISK4.FDD","_DISK5.FDD"]}';
                 break;
-            case "rom": txt='{"mode":"rom","files":["_ADSKOK.FIX","_PUTUP.ROM","_PUTUP.FIX","_RISEOUT.ROM", "AADSKOK.ROM"]}';
+            case "rom": 
+                txt='{"mode":"rom","files":["_ADSKOK.FIX","_PUTUP.ROM","_PUTUP.FIX","_RISEOUT.ROM", "AADSKOK.ROM"]}';
+                break;
+            case "edd": 
+                txt='{"mode":"edd","files":["ADEFAULT.EDD"]}';
+                break;
+            case "boot": 
+                txt='{"mode":"boot","files":["_ZAGR512.BIN","ABOOTS.BIN"]}';
                 break;
         }
         fillList(JSON.parse(txt));
     } else {
         xhr.open("GET", "catalog");
+        if (mainMode) {
+            xhr.setRequestHeader("X-FileName", mainMode.toUpperCase());
+        }
         xhr.onreadystatechange=function() {
             if (xhr.readyState==4 && xhr.status>=200 && xhr.status<300) {
                 var dobj = JSON.parse(xhr.responseText);
@@ -204,7 +281,15 @@ window.onload = function(e) {
     <a id="up" href="..">Наверх</a>
     <div id="main">
     <div class="tabheader">
-        <div id="tab-fdd" class="tab" onclick="setMode('fdd');">FDD</div><div id="tab-rom" class="tab" onclick="setMode('rom');">ROM</div>
+        <div id="tab-fdd" class="tab" onclick="setMode('fdd');">
+            FDD
+        </div><div id="tab-rom" class="tab" onclick="setMode('rom');">
+            ROM
+        </div><div id="tab-edd" class="tab" onclick="setMode('edd');">
+            EDD
+        </div><div id="tab-boot" class="tab" onclick="setMode('boot');">
+            BOOT
+        </div>
     </div>
     <div class="filelist">
     <pre id="dir">

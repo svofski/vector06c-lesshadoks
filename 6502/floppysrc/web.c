@@ -54,6 +54,7 @@ void menu_init()
     // query inifile in ESP
     request_inifile_value("fdda=", fdda_name, 13);
     request_inifile_value("fddb=", fddb_name, 13);
+    request_inifile_value("edd=", edd_name, 13);
 
     DESELECT_ESP();
 }

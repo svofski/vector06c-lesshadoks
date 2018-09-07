@@ -66,7 +66,8 @@ extern char * fddb;
 extern char * fdda_name;
 extern char * fddb_name;
 
-uint8_t thrall(uint8_t *buffer) {
+uint8_t thrall(uint8_t *buffer) 
+{
     uint8_t first = 0;
     uint8_t result;
 
@@ -117,7 +118,8 @@ uint8_t thrall(uint8_t *buffer) {
 }
 
 // thrall forever
-uint8_t loop_until_diskchange(void) {
+uint8_t loop_until_diskchange(void) 
+{
     uint8_t result;
     uint8_t t1;
     uint8_t cmd;
@@ -255,7 +257,8 @@ uint8_t loop_until_diskchange(void) {
     return result;
 }
 
-uint8_t blink(void) {
+uint8_t blink(void) 
+{
     static uint8_t leds = 0x01;
     static uint8_t delay = 1;
     static uint8_t tick;

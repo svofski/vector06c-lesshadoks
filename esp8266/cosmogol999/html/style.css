@@ -1,6 +1,6 @@
 
 body {
-	background-color: #201010;
+	background-color: #011;
 	font-family: sans-serif;
 }
 
@@ -99,7 +99,8 @@ li {
 }
 
 li:hover {
-    background: #f85;
+    background: #47a;
+    color: white;
     border-radius: 1em;
 }
 
@@ -169,8 +170,9 @@ div.hidden {
 }
 
 div.sel.tab {
-    background-color: #558;
+    background-color: #47a;
     color: white;
+    font-weight: bold;
 }
 
 div.filelist {
