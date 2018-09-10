@@ -5,10 +5,6 @@
 <script type="text/javascript">
 
 var OFFLINE = true;
-var mainMode = null;
-if (OFFLINE) {
-    mainMode = "fdd";
-}
 
 var xhr = j();
 
@@ -25,9 +21,10 @@ function oneHotTab(tab)
     }
 }
 
-function selectFDD(drv, fdd)
+/* drv: A = fdda, B = fddb, E = edd, R = rom, U = boot */
+function post_select(drv, fdd, fixup)
 {
-    console.log("selectFDD(" + drv + "," + fdd + ");");
+    console.log("post_select(" + drv + "," + fdd + ");");
     xhr.open("POST", "select");
     xhr.onreadystatechange=function() {
         if (xhr.readyState==4 && xhr.status>=200 && xhr.status<300) {
@@ -37,6 +34,9 @@ function selectFDD(drv, fdd)
     xhr.setRequestHeader("Content-Type", "text/plain");
     xhr.setRequestHeader("X-Drive", drv);
     xhr.setRequestHeader("X-FileName", fdd);
+    if (fixup) {
+        xhr.setRequestHeader("X-Fixup", fixup);
+    }
 
     xhr.send();
     
@@ -59,12 +59,10 @@ function fillListFdds(files)
     };
     for (var i = 0; i < files.length; ++i) {
         txt += "<li>";
-        txt += "<div onclick='return selectFDD(\"A\",\"" + name(i) + 
+        txt += "<div onclick='return post_select(\"A\",\"" + name(i) + 
             "\");' class='floppy " + sel(0,i) + "'>A</div>";
-        txt += "<div onclick='return selectFDD(\"B\",\"" + name(i) + 
+        txt += "<div onclick='return post_select(\"B\",\"" + name(i) + 
             "\");' class='floppy " + sel(1,i) + "'>B</div>";
-        //txt += "<div onclick='return selectFDD(\"R\", \"" + name(i) + 
-        //    "\");' class='kvaz " + sel(10,i) + "'>C</div>";
         txt += "<div class='fddname'>" + name(i) + "</div>";
         
         txt += "</li>";
@@ -74,23 +72,13 @@ function fillListFdds(files)
     oneHotTab("fdd");
 }
 
-function setMode(m)
-{
-    if (OFFLINE) {
-        mainMode = m;
-        doCatalog();
-    } else {
-        // xhr request new mode
-    }
-}
-
-function loadRom(rom,fixup)
+function select_rom(rom,fixup)
 {
     console.log("loadRom: ", rom, fixup);
     if (OFFLINE) {
         doCatalog();
     } else {
-        // request rom load
+        post_select("R", rom, fixup);  
     }
 }
 
@@ -145,7 +133,7 @@ function fillListRoms(files)
         var li = document.createElement('li');
         (function(romname) {
             li.addEventListener("click", function(e) {
-                loadRom(romname);
+                select_rom(romname);
                 e.stopPropagation();
             });
         })(roms[i]);
@@ -156,7 +144,7 @@ function fillListRoms(files)
         if (!hasfixup(roms[i])) f.classList.add('hidden');
         (function(romname,fix) {
             f.addEventListener("click", function(e) {
-                loadRom(romname, fix);
+                select_rom(romname, fix);
                 e.stopPropagation();
             });
         })(roms[i],fixups[roms[i]]);
@@ -187,7 +175,7 @@ function fillListEdds(files)
     };
     for (var i = 0; i < files.length; ++i) {
         txt += "<li>";
-        txt += "<div onclick='return selectFDD(\"R\", \"" + name(i) + 
+        txt += "<div onclick='return post_select(\"E\", \"" + name(i) + 
             "\");' class='kvaz " + sel(10,i) + "'>C</div>";
         txt += "<div class='fddname'>" + name(i) + "</div>";
         
@@ -212,7 +200,7 @@ function fillListBoots(files)
     };
     for (var i = 0; i < files.length; ++i) {
         txt += "<li>";
-        txt += "<div onclick='return selectFDD(\"R\", \"" + name(i) + 
+        txt += "<div onclick='return post_select(\"U\", \"" + name(i) + 
             "\");' class='kvaz " + sel(10,i) + "'>C</div>";
         txt += "<div class='fddname'>" + name(i) + "</div>";
         
@@ -233,15 +221,15 @@ function fillList(dobj)
         case "fdd": return fillListFdds(dobj.files);
         case "edd": return fillListEdds(dobj.files);
         case "boot": return fillListBoots(dobj.files);
-        default:    console.log("WARNING: dobj.mode=", dobj.mode);
+        default:    console.log("WARNING: weird dobj.mode=", dobj.mode);
                     return fillListFdds(dobj.files);
     }
 }
 
-function doCatalog() {
+function doCatalog(mode) {
     if (OFFLINE) {
         var txt;
-        switch (mainMode) {
+        switch (mode || "fdd") {
             case "fdd": 
                 txt='{"mode":"fdd","files":["ADISK1.FDD","_DISK2.FDD","_DISK3.FDD","_DISK4.FDD","_DISK5.FDD"]}';
                 break;
@@ -258,8 +246,8 @@ function doCatalog() {
         fillList(JSON.parse(txt));
     } else {
         xhr.open("GET", "catalog");
-        if (mainMode) {
-            xhr.setRequestHeader("X-FileName", mainMode.toUpperCase());
+        if (mode) {
+            xhr.setRequestHeader("X-Mode", mode.toUpperCase());
         }
         xhr.onreadystatechange=function() {
             if (xhr.readyState==4 && xhr.status>=200 && xhr.status<300) {
@@ -281,13 +269,13 @@ window.onload = function(e) {
     <a id="up" href="..">Наверх</a>
     <div id="main">
     <div class="tabheader">
-        <div id="tab-fdd" class="tab" onclick="setMode('fdd');">
+        <div id="tab-fdd" class="tab" onclick="doCatalog('fdd');">
             FDD
-        </div><div id="tab-rom" class="tab" onclick="setMode('rom');">
+        </div><div id="tab-rom" class="tab" onclick="doCatalog('rom');">
             ROM
-        </div><div id="tab-edd" class="tab" onclick="setMode('edd');">
+        </div><div id="tab-edd" class="tab" onclick="doCatalog('edd');">
             EDD
-        </div><div id="tab-boot" class="tab" onclick="setMode('boot');">
+        </div><div id="tab-boot" class="tab" onclick="doCatalog('boot');">
             BOOT
         </div>
     </div>

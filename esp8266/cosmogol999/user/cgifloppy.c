@@ -7,10 +7,43 @@
 #include "spiffs.h"
 #include "esp_spiffs.h"
 #include "slave.h"
+#include "inifile.h"
+
+char mode_str[8];
+uint8_t mode_code;
+
+enum _modecode {
+    MODE_FDD = 0,
+    MODE_EDD = 1,
+    MODE_ROM = 2,
+    MODE_BOOT = 3,
+};
 
 static void master_dir(HttpdConnData * con);
+static enum _modecode str2modecode();
+static void update_mode_code();
+
+ICACHE_FLASH_ATTR 
+enum _modecode str2modecode()
+{
+    if (strcmp(mode_str, "fdd")) return MODE_FDD;
+    if (strcmp(mode_str, "edd")) return MODE_EDD;
+    if (strcmp(mode_str, "rom")) return MODE_ROM;
+    if (strcmp(mode_str, "boot")) return MODE_BOOT;
+    printf("str2modecode: weird mode_str [%s], defaulting to fdd\n", 
+            mode_str);
+    return MODE_FDD;
+}
+
+ICACHE_FLASH_ATTR
+void update_mode_code()
+{
+    mode_code = str2modecode();
+}
 
 int ICACHE_FLASH_ATTR cgiFloppyCatalog(HttpdConnData *connData) {
+    char mode[sizeof(mode_str)];
+
     if (connData->conn==NULL) {
         //Connection aborted. Clean up.
         return HTTPD_CGI_DONE;
@@ -18,7 +51,25 @@ int ICACHE_FLASH_ATTR cgiFloppyCatalog(HttpdConnData *connData) {
 
     slave_setstate(SLAVE_CATALOG);
 
-    printf("cgiFloppyCatalog: requesting catalog\n");
+    httpdGetHeader(connData, "X-Mode", mode, sizeof(mode)-1);
+
+    // if no mode provided, get the current mode from inifile
+    if (strlen(mode) == 0) {
+        const char * inimode = inifile_get_mode();
+        if (inimode) {
+            strncpy(mode_str, inimode, sizeof(mode_str));
+        }
+    }
+    // update inifile mode if the new mode differs
+    if (strncmp(mode_str, mode, sizeof(mode_str)) != 0) {
+        strncpy(mode_str, mode, sizeof(mode_str));
+        printf("cgiFloppyCatalog: set new mode: [%s]\n", mode);
+        inifile_set_mode(mode);
+    }
+    update_mode_code();
+
+    printf("cgiFloppyCatalog: requesting catalog [%s]\n", mode_str);
+
     httpdStartResponse(connData, 200);
     httpdHeader(connData, "Content-Type", "text/plain");
     httpdEndHeaders(connData);
@@ -36,12 +87,18 @@ static int catalog_num = 0;
 
 void ICACHE_FLASH_ATTR master_dir(HttpdConnData * con)
 {
-    httpdSend(con, "{\"files\":[", -1);
+    httpdSend(con, "{\"mode\":\"",-1);
+    httpdSend(con, mode_str, -1);
+    httpdSend(con, "\"", -1);
+    
+    httpdSend(con, "\"files\":[", -1);
 
     // post a request, expect quick answer
-    // TODO implement using callbacks nad HTTPD_CGI_MORE
+    // TODO implement using callbacks with HTTPD_CGI_MORE
     catalog_num = 0;
-    slave_post_user_command(STM_CATALOG, NULL, 0);
+
+    // post request: STM_CATALOG [len=1] [mode_code]
+    slave_post_user_command(STM_CATALOG, &mode_code, 1);
 
     uint32_t start = system_get_time();
 

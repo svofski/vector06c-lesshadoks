@@ -51,6 +51,7 @@ void menu_init()
 {
     extern char * fdda_name;
     extern char * fddb_name;
+    extern char * edd_name;
     // query inifile in ESP
     request_inifile_value("fdda=", fdda_name, 13);
     request_inifile_value("fddb=", fddb_name, 13);
@@ -95,12 +96,13 @@ uint8_t menu_busy(uint8_t yes)
     return 0;
 }
 
+/* request: +0 [code] +1 [len] +2 [data..] */
 uint8_t handle_request()
 {
     switch (rxbuf[0]) {
         case STM_CATALOG:
             // [code] [sub: 0=fdd,1=edd,2=rom,3=boot]
-            do_catalog(rxbuf[1]);
+            do_catalog(rxbuf[2]);
             return MENURESULT_NOTHING;
         case STM_SELECT:
             do_select();
