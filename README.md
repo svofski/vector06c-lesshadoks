@@ -27,3 +27,75 @@ Key hardware features:
 Board schematic
 ---------------
 [Schematic](/kicad/shadok-cheap/shadok.pdf) (pdf)
+
+
+Build instructions
+------------------
+This project consists of many parts and putting it together is not a simple task.
+Here I wrote down some instructions primarily for myself to be able to remember
+what to do. Good luck!
+
+
+### PART 1 Building Cosmogol999 (esp8266 firmware)
+
+1. Get the sources
+```
+git clone --recurse-submodules https://github.com/svofski/vector06c-lesshadoks
+```
+
+2. Prepare esp-open-sdk
+Follow instructions at https://github.com/pfalcon/esp-open-sdk.
+Mind the requirements, then get the SDK and build:
+```
+git clone --recursive --depth=1 https://github.com/pfalcon/esp-open-sdk.git
+cd esp-open-sdk
+make STANDALONE=y
+```
+
+After the toolchain is ready, do as it says:
+```
+export PATH=$HOME/esp-open-sdk/xtensa-lx106-elf/bin:$PATH
+```
+Also export SDK_BASE:
+```
+export SDK_BASE=$HOME/esp-open-sdk/ESP8266_NONOS_SDK-2.1.0-18-g61248df
+```
+
+4. cd $HOME/vector06c-lesshadoks/esp8266/cosmogol999
+
+5. make 
+ 
+   the firmware will be found in 
+
+    rboot/firmware/rboot.bin
+    firmware/shadki.bin
+    blank_config.bin
+
+    Also these files are found in the SDK:
+    $(SDK_BASE)/bin/blank.bin
+    $(SDK_BASE)/bin/esp_init_data_default.bin
+
+6. flash esp8266
+```
+make flash
+```
+This probably will do something destructive to your esp12f.
+
+
+### PART 2 Building floppy emulator firmware
+
+1. cd $HOME/vector06c-lesshadoks/6502
+```
+make
+```
+
+### PART 3 Building the FPGA programming files
+
+1. Get and install Quartus Lite that supports Cyclone IV E (e.g. 17.1)
+
+For the time being there is no makefile, so just open the project and press Ctrl-L.
+
+### PART 4 Put it all together
+
+???
+

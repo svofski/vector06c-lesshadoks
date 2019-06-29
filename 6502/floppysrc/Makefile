@@ -22,18 +22,24 @@ SIMFLAG=-DSIMULATION=$(SIM)
 # release version will only work with -Oirs
 CFLAGS=-Os -t none -T --cpu 6502 -DWEB_OSD=$(WEB_OSD) $(SIMFLAG)
 
-all:	disk
+all:	builddir disk
 
 disk:	$(OBJS)
 	$(L65) -C vector.lc $(OBJS) ../cc65/lib/vector.lib -o disk.bin -m disk.map
 	objcopy -Ibinary -Oihex disk.bin disk.hex
 	objcopy -Ibinary -Overilog disk.bin disk.hax
 	mkdir -p $(DSTDIR)
-	mv disk.{hex,hax,bin,map} $(DSTDIR)     
+	mv disk.hex $(DSTDIR)
+	mv disk.hax $(DSTDIR)
+	mv disk.bin $(DSTDIR)
+	mv disk.map $(DSTDIR)
 	#hexdump -v -e '/1 "%02X "' $(DSTDIR)/disk.bin >$(DSTDIR)/disk.hax
 
 clean:
 	rm -f build/*
+
+builddir:
+	mkdir -p build
 
 build/%.s:	%.c
 	$(C65) $(CFLAGS) -I $(AINC) -I $(CINC) $< -o $@
