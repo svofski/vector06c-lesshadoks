@@ -8,7 +8,7 @@
 Features (real and planned):
   - [x] RAM disk expansion in SDRAM
   - [x] AY and other sound device emulation
-  - [ ] Joystick ports
+  - [x] Joystick ports
   - [x] floppy disk emulator
   - [x] floppy images on SD card
   - [ ] floppy images downloaded from the internets
@@ -61,21 +61,21 @@ Also export SDK_BASE:
 export SDK_BASE=$HOME/esp-open-sdk/ESP8266_NONOS_SDK-2.1.0-18-g61248df
 ```
 
-4. cd $HOME/vector06c-lesshadoks/esp8266/cosmogol999
+3. Actually build
 
-5. make 
- 
-   the firmware will be found in 
+```
+cd $HOME/vector06c-lesshadoks/esp8266/cosmogol999
+make 
+``` 
 
+The firmware will be found in 
+```
     rboot/firmware/rboot.bin
     firmware/shadki.bin
     blank_config.bin
+```
 
-    Also these files are found in the SDK:
-    $(SDK_BASE)/bin/blank.bin
-    $(SDK_BASE)/bin/esp_init_data_default.bin
-
-6. flash esp8266
+6. Flash
 ```
 make flash
 ```
@@ -84,8 +84,9 @@ This probably will do something destructive to your esp12f.
 
 ### PART 2 Building floppy emulator firmware
 
-1. cd $HOME/vector06c-lesshadoks/6502
+This one should be easy.
 ```
+cd $HOME/vector06c-lesshadoks/6502
 make
 ```
 
@@ -93,7 +94,8 @@ make
 
 1. Get and install Quartus Lite that supports Cyclone IV E (e.g. 17.1)
 
-For the time being there is no makefile, so just open the project and press Ctrl-L.
+2. For the time being there is no makefile, so just open the project 
+quartus/pompaient.qpf and press Ctrl-L.
 
 ### PART 4 Put it all together
 
